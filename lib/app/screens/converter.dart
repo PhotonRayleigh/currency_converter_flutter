@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:win32/win32.dart';
+import 'package:decimal/decimal.dart';
+
+import 'package:currency_converter_flutter/app/models/currencies.dart';
 
 class ConverterScreen extends StatefulWidget {
   @override
@@ -13,11 +16,81 @@ class ConverterScreen extends StatefulWidget {
 // TODO: Implement
 
 class ConverterScreenState extends State<ConverterScreen> {
-  RxInt fromVal = 1.obs;
-  RxInt toVal = 1.obs;
+  static const defaultSelection = "--SELECT--";
+  static final defaultValue = Decimal.zero;
+  String fromVal = defaultSelection;
+  String toVal = defaultSelection;
 
   @override
   Widget build(BuildContext context) {
+    Color textColor = Colors.white;
+    TextStyle panelTextStyle = TextStyle(color: textColor, fontSize: 20);
+    TextStyle darkTextStyle = TextStyle(color: Colors.black, fontSize: 20);
+
+    LinearGradient panelGradient = LinearGradient(
+        colors: [Color(0xFFec2075), Color(0xFFf33944)], stops: [0.0, 0.5]);
+
+    var buttonDecoration = BoxDecoration(
+      gradient: panelGradient,
+      borderRadius: BorderRadius.all(Radius.circular(6)),
+    );
+
+    var selectorsBlock = Container(
+      margin: EdgeInsets.fromLTRB(20, 8, 20, 8),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6)),
+          gradient: panelGradient),
+      child: Flex(
+        direction: Axis.horizontal,
+        children: [
+          Expanded(
+              child: Column(
+            children: [
+              Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Text(
+                    "Enter Amount:",
+                    style: panelTextStyle,
+                  )),
+              Padding(
+                  padding: EdgeInsets.all(4),
+                  child: TextField(
+                    controller: TextEditingController(text: "0.00"),
+                    decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(Icons.attach_money)),
+                    style: TextStyle(color: Colors.black),
+                  )),
+            ],
+          )),
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  "From:",
+                  style: panelTextStyle,
+                ),
+                buildList(fromVal, (newVal) => fromVal = newVal, darkTextStyle),
+              ],
+            ),
+          ),
+          Icon(Icons.swap_horiz),
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  "To:",
+                  style: panelTextStyle,
+                ),
+                buildList(toVal, (newVal) => toVal = newVal, darkTextStyle),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Currency Converter"),
@@ -38,78 +111,29 @@ class ConverterScreenState extends State<ConverterScreen> {
           children: [
             Text("Converted Currency"),
             Text(""),
-            Container(
-              margin: EdgeInsets.fromLTRB(6, 4, 6, 4),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(6)),
-                  gradient: LinearGradient(
-                      colors: [Color(0xFFec2075), Color(0xFFf33944)],
-                      stops: [0.0, 0.5])),
-              child: Flex(
-                direction: Axis.horizontal,
-                children: [
-                  Expanded(
-                      child: Column(
-                    children: [
-                      Text("Enter Amount:"),
-                      TextField(
-                        controller: TextEditingController(text: "Hello world!"),
-                        decoration: InputDecoration(),
-                      ),
-                    ],
-                  )),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text("From:"),
-                        Obx(() => DropdownButton(
-                              onChanged: (int? newValue) {
-                                fromVal.value = newValue ?? 0;
-                              },
-                              value: fromVal.value,
-                              items: [
-                                DropdownMenuItem(child: Text("1"), value: 1),
-                                DropdownMenuItem(child: Text("2"), value: 2),
-                                DropdownMenuItem(child: Text("3"), value: 3),
-                                DropdownMenuItem(child: Text("4"), value: 4),
-                              ],
-                            )),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.swap_horiz),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text("To:"),
-                        Obx(() => DropdownButton(
-                              onChanged: (int? newValue) {
-                                toVal.value = newValue ?? 0;
-                              },
-                              value: toVal.value,
-                              items: [
-                                DropdownMenuItem(child: Text("1"), value: 1),
-                                DropdownMenuItem(child: Text("2"), value: 2),
-                                DropdownMenuItem(child: Text("3"), value: 3),
-                                DropdownMenuItem(child: Text("4"), value: 4),
-                              ],
-                            )),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            selectorsBlock,
             FittedBox(
                 child: Row(
               children: [
-                ElevatedButton(
-                  child: Text("Convert"),
-                  onPressed: () {},
-                ),
-                ElevatedButton(
-                  child: Text("Clear"),
-                  onPressed: () {},
+                Container(
+                    margin: EdgeInsets.all(6.0),
+                    padding: EdgeInsets.all(4),
+                    decoration: buttonDecoration,
+                    child: TextButton(
+                      child: Text("Convert", style: panelTextStyle),
+                      onPressed: () {},
+                    )),
+                Container(
+                  margin: EdgeInsets.all(6.0),
+                  padding: EdgeInsets.all(4),
+                  decoration: buttonDecoration,
+                  child: TextButton(
+                    child: Text(
+                      "Clear",
+                      style: panelTextStyle,
+                    ),
+                    onPressed: () {},
+                  ),
                 ),
               ],
             )),
@@ -117,5 +141,36 @@ class ConverterScreenState extends State<ConverterScreen> {
         ),
       ),
     );
+  }
+
+  Widget buildList(
+      String selectedVal, void Function(String) update, TextStyle textStyle) {
+    List<DropdownMenuItem<String>> dropDownItems = <DropdownMenuItem<String>>[];
+    dropDownItems.add(DropdownMenuItem(
+        child: Text(defaultSelection, style: textStyle),
+        value: defaultSelection));
+
+    currencyList.forEach((currency, value) {
+      dropDownItems.add(
+        DropdownMenuItem(
+            child: Text(
+              currency,
+              style: textStyle,
+            ),
+            value: currency),
+      );
+    });
+
+    return Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6), color: Colors.white),
+        child: DropdownButton<String>(
+          onChanged: (String? newValue) {
+            setState(() => update(newValue ?? defaultSelection));
+          },
+          value: selectedVal,
+          items: dropDownItems,
+          dropdownColor: Colors.white,
+        ));
   }
 }
