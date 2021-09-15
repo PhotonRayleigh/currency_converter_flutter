@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 /*
     AppSystemManager class:
@@ -39,17 +40,21 @@ class _AppSystemManagerState extends State<AppSystemManager>
     appManager = this;
   }
 
+  List<void Function()> onScreenChanged = <void Function()>[];
+
   @override
   initState() {
     // Use init state for system initialization tasks, I think
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
     WidgetsBinding.instance!.addObserver(this);
+    Get.put(this);
   }
 
   @override
   void dispose() {
     // Clean up operations can go in the dispose section
+    Get.delete<_AppSystemManagerState>();
     WidgetsBinding.instance!.removeObserver(this);
     super
         .dispose(); // Remember super.dispose always comes last in dispose methods.
@@ -88,6 +93,9 @@ class _AppSystemManagerState extends State<AppSystemManager>
     // This actually gets called every time the view is resized.
     // There are other ways to handle screen size changes, which may be better suited
     // than using this callback.
+    for (var action in onScreenChanged) {
+      action();
+    }
   }
 
   @override
