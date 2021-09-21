@@ -36,6 +36,7 @@ class ConverterScreenState extends State<ConverterScreen> {
 
   var enterAmountController = TextEditingController(text: "");
   var convertedOutput = Decimal.zero;
+  var inputValue = Decimal.zero;
 
   @override
   void initState() {
@@ -102,6 +103,17 @@ class ConverterScreenState extends State<ConverterScreen> {
           ),
           style: TextStyle(color: Colors.black),
           inputFormatters: [FormatNumericOnly()],
+          onChanged: (text) {
+            if (text == "") return;
+            String cleanedText = text;
+            var regExPattern = RegExp(r"(\d*[.]?\d{0,8}){1}");
+            if (regExPattern.hasMatch(text)) {
+              if (text.endsWith(".")) cleanedText = text + "0";
+              if (text.startsWith(".")) cleanedText = "0" + text;
+              inputValue = Decimal.parse(cleanedText);
+            } else
+              print("Error: Incorrect number format.");
+          },
         ),
       ],
     );
@@ -237,7 +249,7 @@ class ConverterScreenState extends State<ConverterScreen> {
                       fontSize: 24),
                   textAlign: TextAlign.center,
                 ),
-                Text("\$${convertedOutput.toString()}",
+                Text("\$${convertedOutput.toStringAsFixed(8)}",
                     style: TextStyle(fontSize: 16)),
                 selectorsBlock,
                 FittedBox(
@@ -250,7 +262,7 @@ class ConverterScreenState extends State<ConverterScreen> {
                         decoration: buttonDecoration,
                         child: TextButton(
                           child: Text("Convert", style: panelTextStyle),
-                          onPressed: () {},
+                          onPressed: calculateConversion,
                         )),
                     Container(
                       margin: EdgeInsets.all(6.0),
@@ -340,6 +352,18 @@ class ConverterScreenState extends State<ConverterScreen> {
     toVal = defaultSelection;
     enterAmountController.clear();
     convertedOutput = Decimal.zero;
+    setState(() {});
+  }
+
+  void calculateConversion() {
+    if (fromVal == defaultSelection || toVal == defaultSelection) {
+      print("Error: Please select a currency to convert to and from.");
+      return;
+    }
+    var fromFactor = currencyList[fromVal] ?? Decimal.fromInt(1);
+    var toFactor = currencyList[toVal] ?? Decimal.fromInt(1);
+
+    convertedOutput = inputValue * (toFactor / fromFactor);
     setState(() {});
   }
 }
