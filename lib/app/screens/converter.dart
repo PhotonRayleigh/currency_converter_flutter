@@ -323,24 +323,33 @@ class FormatNumericOnly extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    // print("Old value: $oldValue");
-    // print("New value: $newValue");
-    if (newValue.text.length < oldValue.text.length) return newValue;
-    if (newValue.text.contains(RegExp(r'[\d.]'), newValue.text.length - 1)) {
-      int periods = 0;
-      int periodLoc = -1;
-      int scanLoc = 0;
-      for (var chars in newValue.text.characters) {
-        if (chars == '.') {
-          periods++;
-          periodLoc = periods - 1;
-        }
-        if (periods > 1) return oldValue;
-        if (scanLoc > (periodLoc + 5)) return oldValue;
-        scanLoc++;
+    TextEditingValue result = newValue;
+    // var regExPattern = RegExp(r"\d*[.]?\d{0,4}");
+    int position = 0;
+    int period = -1;
+    int postPeriod = 0;
+    for (var char in newValue.text.characters) {
+      if (!char.isNumericOnly && char != '.') {
+        result = oldValue;
+        break;
       }
-      return newValue;
-    } else
-      return oldValue;
+      if (char == '.') {
+        if (period == -1) {
+          period = position;
+        } else {
+          result = oldValue;
+          break;
+        }
+      }
+      if (postPeriod > 4) {
+        result = oldValue;
+        break;
+      }
+
+      position++;
+      if (period >= 0) postPeriod++;
+    }
+
+    return result;
   }
 }
