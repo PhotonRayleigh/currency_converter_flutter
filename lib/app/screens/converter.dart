@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:win32/win32.dart';
@@ -78,6 +79,7 @@ class ConverterScreenState extends State<ConverterScreen> {
 
     var enterAmountColumn = Column(
       key: amtColKey,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Enter Amount:",
@@ -85,13 +87,40 @@ class ConverterScreenState extends State<ConverterScreen> {
         ),
         inputBoxDivider,
         TextField(
-          controller: TextEditingController(text: "0.00"),
+          controller: TextEditingController(text: ""),
           decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              prefixIcon: Icon(Icons.attach_money)),
+              prefixIcon: Icon(Icons.attach_money),
+              hintText: "0.00"),
           style: TextStyle(color: Colors.black),
+          inputFormatters: [FormatNumericOnly()],
         ),
+      ],
+    );
+
+    var fromColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "From:",
+          style: panelTextStyle,
+          textAlign: TextAlign.start,
+        ),
+        inputBoxDivider,
+        buildList(fromVal, (newVal) => fromVal = newVal, darkTextStyle),
+      ],
+    );
+
+    var toColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "To:",
+          style: panelTextStyle,
+        ),
+        inputBoxDivider,
+        buildList(toVal, (newVal) => toVal = newVal, darkTextStyle),
       ],
     );
 
@@ -104,17 +133,7 @@ class ConverterScreenState extends State<ConverterScreen> {
         Expanded(
             child: Padding(
                 padding: EdgeInsets.only(left: 6, right: 6),
-                child: Column(
-                  children: [
-                    Text(
-                      "From:",
-                      style: panelTextStyle,
-                    ),
-                    inputBoxDivider,
-                    buildList(
-                        fromVal, (newVal) => fromVal = newVal, darkTextStyle),
-                  ],
-                ))),
+                child: fromColumn)),
         Column(children: [
           SizedBox(
             height: height,
@@ -133,33 +152,16 @@ class ConverterScreenState extends State<ConverterScreen> {
         ]),
         Expanded(
             child: Padding(
-                padding: EdgeInsets.only(left: 6),
-                child: Column(
-                  children: [
-                    Text(
-                      "To:",
-                      style: panelTextStyle,
-                    ),
-                    inputBoxDivider,
-                    buildList(toVal, (newVal) => toVal = newVal, darkTextStyle),
-                  ],
-                ))),
+          padding: EdgeInsets.only(left: 6),
+          child: toColumn,
+        )),
       ];
     } else {
       inputCols = [
-        Padding(padding: EdgeInsets.only(right: 0), child: enterAmountColumn),
         Padding(
-            padding: EdgeInsets.only(left: 0, right: 0),
-            child: Column(
-              children: [
-                Text(
-                  "From:",
-                  style: panelTextStyle,
-                ),
-                inputBoxDivider,
-                buildList(fromVal, (newVal) => fromVal = newVal, darkTextStyle),
-              ],
-            )),
+            padding: EdgeInsets.only(right: 0, bottom: 6),
+            child: enterAmountColumn),
+        Padding(padding: EdgeInsets.only(left: 0, right: 0), child: fromColumn),
         Column(children: [
           Padding(
               padding: EdgeInsets.only(top: 6, bottom: 6),
@@ -170,17 +172,9 @@ class ConverterScreenState extends State<ConverterScreen> {
               )),
         ]),
         Padding(
-            padding: EdgeInsets.only(left: 0),
-            child: Column(
-              children: [
-                Text(
-                  "To:",
-                  style: panelTextStyle,
-                ),
-                inputBoxDivider,
-                buildList(toVal, (newVal) => toVal = newVal, darkTextStyle),
-              ],
-            )),
+          padding: EdgeInsets.only(left: 0),
+          child: toColumn,
+        ),
       ];
     }
 
@@ -322,5 +316,31 @@ class ConverterScreenState extends State<ConverterScreen> {
     //   //   color: Colors.transparent,
     //   // ),
     // );
+  }
+}
+
+class FormatNumericOnly extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // print("Old value: $oldValue");
+    // print("New value: $newValue");
+    if (newValue.text.length < oldValue.text.length) return newValue;
+    if (newValue.text.contains(RegExp(r'[\d.]'), newValue.text.length - 1)) {
+      int periods = 0;
+      int periodLoc = -1;
+      int scanLoc = 0;
+      for (var chars in newValue.text.characters) {
+        if (chars == '.') {
+          periods++;
+          periodLoc = periods - 1;
+        }
+        if (periods > 1) return oldValue;
+        if (scanLoc > (periodLoc + 5)) return oldValue;
+        scanLoc++;
+      }
+      return newValue;
+    } else
+      return oldValue;
   }
 }
