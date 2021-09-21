@@ -34,6 +34,9 @@ class ConverterScreenState extends State<ConverterScreen> {
   var amtColKey = GlobalKey(debugLabel: "Amount Key");
   var height = 1.0;
 
+  var enterAmountController = TextEditingController(text: "");
+  var convertedOutput = Decimal.zero;
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +44,7 @@ class ConverterScreenState extends State<ConverterScreen> {
     void updateOnScreenResize() {
       height = amtColKey.currentContext?.size?.height ?? 1.0;
       // submitButtonWidth = convertBtnKey.currentContext?.size?.width;
-      print(height);
+      // print(height);
       setState(() {});
     }
 
@@ -58,6 +61,8 @@ class ConverterScreenState extends State<ConverterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double minWidth = context.isLandscape ? 497 : 216;
+
     Color textColor = Colors.white;
     TextStyle panelTextStyle = TextStyle(color: textColor, fontSize: 20);
     TextStyle darkTextStyle = TextStyle(color: Colors.black, fontSize: 20);
@@ -65,7 +70,7 @@ class ConverterScreenState extends State<ConverterScreen> {
     LinearGradient panelGradient = LinearGradient(
         colors: [Color(0xFFec2075), Color(0xFFf33944)], stops: [0.0, 0.5]);
 
-    Axis inputBoxDir = context.isLandscape ? Axis.horizontal : Axis.vertical;
+    // Axis inputBoxDir = context.isLandscape ? Axis.horizontal : Axis.vertical;
 
     var buttonDecoration = BoxDecoration(
       gradient: panelGradient,
@@ -87,12 +92,14 @@ class ConverterScreenState extends State<ConverterScreen> {
         ),
         inputBoxDivider,
         TextField(
-          controller: TextEditingController(text: ""),
+          controller: enterAmountController,
           decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              prefixIcon: Icon(Icons.attach_money),
-              hintText: "0.00"),
+            filled: true,
+            fillColor: Colors.white,
+            prefixIcon: Icon(Icons.attach_money),
+            hintText: "0.00",
+            // constraints: BoxConstraints.loose(Size.fromWidth(context.width)),
+          ),
           style: TextStyle(color: Colors.black),
           inputFormatters: [FormatNumericOnly()],
         ),
@@ -178,15 +185,17 @@ class ConverterScreenState extends State<ConverterScreen> {
       ];
     }
 
+    // Contains main user input UI
     var selectorsBlock = Container(
       margin: EdgeInsets.fromLTRB(20, 8, 20, 8),
       padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(6)),
-          gradient: panelGradient),
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+        gradient: panelGradient,
+      ),
       child: Flex(
-        direction: inputBoxDir,
-        // crossAxisAlignment: CrossAxisAlignment.stretch,
+        direction: context.isLandscape ? Axis.horizontal : Axis.vertical,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: inputCols,
       ),
     );
@@ -210,47 +219,55 @@ class ConverterScreenState extends State<ConverterScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Column(
-          children: [
-            Text(
-              "Converted Currency",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24),
-            ),
-            Text("\$0.00", style: TextStyle(fontSize: 16)),
-            selectorsBlock,
-            FittedBox(
-                child: Row(
+      body: InteractiveViewer(
+        panEnabled: true,
+        scaleEnabled: false,
+        constrained: false,
+        alignPanAxis: true,
+        child: SizedBox(
+            width: context.width > minWidth ? context.width : minWidth,
+            height: null,
+            child: Column(
               children: [
-                Container(
-                    // key: convertBtnKey,
-                    margin: EdgeInsets.all(6.0),
-                    padding: EdgeInsets.fromLTRB(6, 4, 6, 4),
-                    decoration: buttonDecoration,
-                    child: TextButton(
-                      child: Text("Convert", style: panelTextStyle),
-                      onPressed: () {},
-                    )),
-                Container(
-                  margin: EdgeInsets.all(6.0),
-                  padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-                  decoration: buttonDecoration,
-                  child: TextButton(
-                    child: Text(
-                      "Clear",
-                      style: panelTextStyle,
-                    ),
-                    onPressed: () {},
-                  ),
+                Text(
+                  "Converted Currency",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24),
+                  textAlign: TextAlign.center,
                 ),
+                Text("\$${convertedOutput.toString()}",
+                    style: TextStyle(fontSize: 16)),
+                selectorsBlock,
+                FittedBox(
+                    child: Row(
+                  children: [
+                    Container(
+                        // key: convertBtnKey,
+                        margin: EdgeInsets.all(6.0),
+                        padding: EdgeInsets.fromLTRB(6, 4, 6, 4),
+                        decoration: buttonDecoration,
+                        child: TextButton(
+                          child: Text("Convert", style: panelTextStyle),
+                          onPressed: () {},
+                        )),
+                    Container(
+                      margin: EdgeInsets.all(6.0),
+                      padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+                      decoration: buttonDecoration,
+                      child: TextButton(
+                        child: Text(
+                          "Clear",
+                          style: panelTextStyle,
+                        ),
+                        onPressed: clearInputs,
+                      ),
+                    ),
+                  ],
+                )),
               ],
             )),
-          ],
-        ),
       ),
     );
   }
@@ -317,6 +334,14 @@ class ConverterScreenState extends State<ConverterScreen> {
     //   // ),
     // );
   }
+
+  void clearInputs() {
+    fromVal = defaultSelection;
+    toVal = defaultSelection;
+    enterAmountController.clear();
+    convertedOutput = Decimal.zero;
+    setState(() {});
+  }
 }
 
 class FormatNumericOnly extends TextInputFormatter {
@@ -325,6 +350,7 @@ class FormatNumericOnly extends TextInputFormatter {
       TextEditingValue oldValue, TextEditingValue newValue) {
     TextEditingValue result = newValue;
     // var regExPattern = RegExp(r"\d*[.]?\d{0,4}");
+    // 16 digits before decimal, 8 after
     int position = 0;
     int period = -1;
     int postPeriod = 0;
@@ -341,7 +367,11 @@ class FormatNumericOnly extends TextInputFormatter {
           break;
         }
       }
-      if (postPeriod > 4) {
+      if (period == -1 && position >= 16) {
+        result = oldValue;
+        break;
+      }
+      if (postPeriod > 8) {
         result = oldValue;
         break;
       }
