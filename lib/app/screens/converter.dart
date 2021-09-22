@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:win32/win32.dart';
+// import 'package:win32/win32.dart';
 import 'package:decimal/decimal.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 
@@ -110,6 +110,7 @@ class ConverterScreenState extends State<ConverterScreen> {
             if (regExPattern.hasMatch(text)) {
               if (text.endsWith(".")) cleanedText = text + "0";
               if (text.startsWith(".")) cleanedText = "0" + text;
+              var decimal = Decimal.parse(cleanedText);
               inputValue = Decimal.parse(cleanedText);
             } else
               print("Error: Incorrect number format.");
@@ -249,7 +250,28 @@ class ConverterScreenState extends State<ConverterScreen> {
                       fontSize: 24),
                   textAlign: TextAlign.center,
                 ),
-                Text("\$${convertedOutput.toStringAsFixed(8)}",
+                Text(
+                    "\$${() {
+                      var tmp = convertedOutput.toStringAsFixed(8);
+                      // if (!tmp.contains(".")) return tmp;
+                      var index = tmp.length - 1;
+                      int trimTo = index;
+                      var chars = tmp.characters.toList();
+                      for (int i = index; i >= 0; i--) {
+                        // Iterate until we hit not zero or get within 2 places of the period.
+                        if (chars[i] == '0') {
+                          trimTo = i;
+                        } else
+                          break;
+                        int toPeriod = 1;
+                        for (int j = i; chars[j] != '.'; j--) toPeriod++;
+                        if (toPeriod <= 3) break;
+                      }
+                      var finalList = chars.sublist(0, trimTo + 1);
+                      String output = "";
+                      for (var char in finalList) output = output + char;
+                      return output;
+                    }()}",
                     style: TextStyle(fontSize: 16)),
                 selectorsBlock,
                 FittedBox(
