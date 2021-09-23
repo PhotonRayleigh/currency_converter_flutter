@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 // import 'package:win32/win32.dart';
@@ -12,6 +13,9 @@ import 'dart:io';
 import 'package:currency_converter_flutter/app/models/currencies.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
 
+// Reminder: Flutter wrap plugin lets you use ALT-C to wrap a selection in a container,
+// and ALT-S to wrap a selection in a stack.
+
 class ConverterScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -19,16 +23,13 @@ class ConverterScreen extends StatefulWidget {
   }
 }
 
-// Todos:
-// 1) Finish styling
-// 2) Start hooking up conversion logic
-// 3) Start on backend.
-
 class ConverterScreenState extends State<ConverterScreen> {
   static const defaultSelection = "--SELECT--";
   static final defaultValue = Decimal.zero;
   String fromVal = defaultSelection;
   String toVal = defaultSelection;
+
+  late FocusNode _bgNode;
 
   // double? submitButtonWidth;
   // var convertBtnKey = GlobalKey(debugLabel: "convert button key");
@@ -43,6 +44,8 @@ class ConverterScreenState extends State<ConverterScreen> {
   @override
   void initState() {
     super.initState();
+
+    _bgNode = FocusNode();
 
     void updateOnScreenResize() {
       height = amtColKey.currentContext?.size?.height ?? 1.0;
@@ -60,6 +63,12 @@ class ConverterScreenState extends State<ConverterScreen> {
     addCallback();
 
     appManager.onScreenChanged.add(addCallback);
+  }
+
+  @override
+  void dispose() {
+    _bgNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -257,93 +266,105 @@ class ConverterScreenState extends State<ConverterScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: NewGradientAppBar(
-        title: appBarTitle,
-        gradient: panelGradient,
-        actions: appBarActions,
-      ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            DrawerHeader(
-              child: Text("Placeholder"),
-            )
-          ],
-        ),
-      ),
-      body: InteractiveViewer(
-        panEnabled: true,
-        scaleEnabled: false,
-        constrained: false,
-        alignPanAxis: true,
-        child: SizedBox(
-            width: context.width > minWidth ? context.width : minWidth,
-            height: null,
-            child: Column(
-              children: [
-                Text(
-                  "Converted Currency",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                    "${toVal == defaultSelection ? "" : toVal + " "}${() {
-                      var tmp = convertedOutput.toStringAsFixed(8);
-                      // if (!tmp.contains(".")) return tmp;
-                      var index = tmp.length - 1;
-                      int trimTo = index;
-                      var chars = tmp.characters.toList();
-                      for (int i = index; i >= 0; i--) {
-                        // Iterate until we hit not zero or get within 2 places of the period.
-                        if (chars[i] == '0') {
-                          trimTo = i;
-                        } else
-                          break;
-                        int toPeriod = 1;
-                        for (int j = i; chars[j] != '.'; j--) toPeriod++;
-                        if (toPeriod <= 3) break;
-                      }
-                      var finalList = chars.sublist(0, trimTo + 1);
-                      String output = "";
-                      for (var char in finalList) output = output + char;
-                      return output;
-                    }()}",
-                    style: TextStyle(fontSize: 16)),
-                selectorsBlock,
-                FittedBox(
-                    child: Row(
+    return Focus(
+        focusNode: _bgNode,
+        child: GestureDetector(
+          onTap: () {
+            if (_bgNode.hasFocus) {
+              _bgNode.unfocus();
+            } else {
+              _bgNode.requestFocus();
+            }
+          },
+          child: Scaffold(
+              appBar: NewGradientAppBar(
+                title: appBarTitle,
+                gradient: panelGradient,
+                actions: appBarActions,
+              ),
+              drawer: Drawer(
+                child: Column(
                   children: [
-                    Container(
-                        // key: convertBtnKey,
-                        margin: EdgeInsets.all(6.0),
-                        padding: EdgeInsets.fromLTRB(6, 4, 6, 4),
-                        decoration: buttonDecoration,
-                        child: TextButton(
-                          child: Text("Convert", style: panelTextStyle),
-                          onPressed: calculateConversion,
-                        )),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-                      decoration: buttonDecoration,
-                      child: TextButton(
-                        child: Text(
-                          "Clear",
-                          style: panelTextStyle,
-                        ),
-                        onPressed: clearInputs,
-                      ),
-                    ),
+                    DrawerHeader(
+                      child: Text("Placeholder"),
+                    )
                   ],
-                )),
-              ],
-            )),
-      ),
-    );
+                ),
+              ),
+              body: InteractiveViewer(
+                panEnabled: true,
+                scaleEnabled: false,
+                constrained: false,
+                alignPanAxis: true,
+                child: SizedBox(
+                    width: context.width > minWidth ? context.width : minWidth,
+                    height: null,
+                    child: Column(
+                      children: [
+                        Text(
+                          "Converted Currency",
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                            "${toVal == defaultSelection ? "" : toVal + " "}${() {
+                              var tmp = convertedOutput.toStringAsFixed(8);
+                              // if (!tmp.contains(".")) return tmp;
+                              var index = tmp.length - 1;
+                              int trimTo = index;
+                              var chars = tmp.characters.toList();
+                              for (int i = index; i >= 0; i--) {
+                                // Iterate until we hit not zero or get within 2 places of the period.
+                                if (chars[i] == '0') {
+                                  trimTo = i;
+                                } else
+                                  break;
+                                int toPeriod = 1;
+                                for (int j = i; chars[j] != '.'; j--)
+                                  toPeriod++;
+                                if (toPeriod <= 3) break;
+                              }
+                              var finalList = chars.sublist(0, trimTo + 1);
+                              String output = "";
+                              for (var char in finalList)
+                                output = output + char;
+                              return output;
+                            }()}",
+                            style: TextStyle(fontSize: 16)),
+                        selectorsBlock,
+                        FittedBox(
+                            child: Row(
+                          children: [
+                            Container(
+                                // key: convertBtnKey,
+                                margin: EdgeInsets.all(6.0),
+                                padding: EdgeInsets.fromLTRB(6, 4, 6, 4),
+                                decoration: buttonDecoration,
+                                child: TextButton(
+                                  child: Text("Convert", style: panelTextStyle),
+                                  onPressed: calculateConversion,
+                                )),
+                            Container(
+                              margin: EdgeInsets.all(6.0),
+                              padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+                              decoration: buttonDecoration,
+                              child: TextButton(
+                                child: Text(
+                                  "Clear",
+                                  style: panelTextStyle,
+                                ),
+                                onPressed: clearInputs,
+                              ),
+                            ),
+                          ],
+                        )),
+                      ],
+                    )),
+              )),
+        ));
   }
 
   Widget buildList(
