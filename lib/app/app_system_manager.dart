@@ -20,10 +20,6 @@ import 'package:get/get.dart';
 late final _AppSystemManagerState appManager;
 late bool _managerSet = false;
 
-void myFunc() {
-  var context = appManager.context;
-}
-
 class AppSystemManager extends StatefulWidget {
   final Widget child;
   AppSystemManager({Key? key, required this.child}) : super(key: key);

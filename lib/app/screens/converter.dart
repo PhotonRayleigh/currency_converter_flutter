@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 // import 'package:win32/win32.dart';
 import 'package:decimal/decimal.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'dart:io';
 
 import 'package:currency_converter_flutter/app/models/currencies.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
@@ -213,15 +215,53 @@ class ConverterScreenState extends State<ConverterScreen> {
       ),
     );
 
+    Widget appBarTitle;
+    List<Widget> appBarActions = <Widget>[];
+    WindowButtonColors windowButtonColors =
+        WindowButtonColors(iconNormal: Colors.white, mouseOver: Colors.black38);
+
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      appBarActions = [
+        MinimizeWindowButton(
+          colors: windowButtonColors,
+        ),
+        MaximizeWindowButton(colors: windowButtonColors),
+        CloseWindowButton(
+            colors: WindowButtonColors(
+                iconNormal: Colors.white,
+                mouseOver: Colors.pink[900]?.withOpacity(0.65),
+                mouseDown: Colors.pink[200])),
+      ];
+      appBarTitle =
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Expanded(
+            child: MoveWindow(
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Currency Converter",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize:
+                            Theme.of(context).textTheme.headline5?.fontSize,
+                      ),
+                    ))))
+      ]);
+    } else {
+      appBarTitle = Text(
+        "Currency Converter",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: Theme.of(context).textTheme.headline5?.fontSize,
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: NewGradientAppBar(
-        title: Text(
-          "Currency Converter",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: appBarTitle,
         gradient: panelGradient,
+        actions: appBarActions,
       ),
       drawer: Drawer(
         child: Column(
@@ -251,7 +291,7 @@ class ConverterScreenState extends State<ConverterScreen> {
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                    "\$${() {
+                    "${toVal == defaultSelection ? "" : toVal + " "}${() {
                       var tmp = convertedOutput.toStringAsFixed(8);
                       // if (!tmp.contains(".")) return tmp;
                       var index = tmp.length - 1;

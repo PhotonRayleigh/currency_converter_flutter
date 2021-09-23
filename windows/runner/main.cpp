@@ -6,11 +6,18 @@
 #include "run_loop.h"
 #include "utils.h"
 
+// Include for bitsdojo_window package
+// https://pub.dev/packages/bitsdojo_window
+#include <bitsdojo_window_windows/bitsdojo_window_plugin.h>
+auto bdw = bitsdojo_window_configure(BDW_CUSTOM_FRAME | BDW_HIDE_ON_STARTUP);
+
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
-                      _In_ wchar_t *command_line, _In_ int show_command) {
+                      _In_ wchar_t *command_line, _In_ int show_command)
+{
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
-  if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
+  if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent())
+  {
     CreateAndAttachConsole();
   }
 
@@ -30,7 +37,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(&run_loop, project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.CreateAndShow(L"currency_converter_flutter", origin, size)) {
+  if (!window.CreateAndShow(L"currency_converter_flutter", origin, size))
+  {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

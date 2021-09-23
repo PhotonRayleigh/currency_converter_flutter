@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'package:spark_lib/widgets/shift_right_fixer.dart';
 
@@ -10,8 +11,11 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShiftRightFixer(
         child: AppSystemManager(
-            child: MaterialApp(
-      home: ConverterScreen(),
-    )));
+            child: WindowBorder(
+                color: Colors.black,
+                child: MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  home: ConverterScreen(),
+                ))));
   }
 }
