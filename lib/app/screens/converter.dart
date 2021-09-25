@@ -10,8 +10,12 @@ import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'dart:io';
 
+import 'package:spark_lib/strings/text_formatters.dart';
+
 import 'package:currency_converter_flutter/app/models/currencies.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
+import 'package:currency_converter_flutter/app/theme/main_decorations.dart';
+import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
 
 // Reminder: Flutter wrap plugin lets you use ALT-C to wrap a selection in a container,
 // and ALT-S to wrap a selection in a stack.
@@ -40,6 +44,9 @@ class ConverterScreenState extends State<ConverterScreen> {
   var enterAmountController = TextEditingController(text: "");
   var convertedOutput = Decimal.zero;
   var inputValue = Decimal.zero;
+
+  static double _minWidthLandscape = 497;
+  static double _minWidthPortrait = 216;
 
   @override
   void initState() {
@@ -71,24 +78,240 @@ class ConverterScreenState extends State<ConverterScreen> {
     super.dispose();
   }
 
+  void _clearInputs() {
+    fromVal = defaultSelection;
+    toVal = defaultSelection;
+    enterAmountController.clear();
+    convertedOutput = Decimal.zero;
+    setState(() {});
+  }
+
+  void _calculateConversion() {
+    if (fromVal == defaultSelection || toVal == defaultSelection) {
+      print("Error: Please select a currency to convert to and from.");
+      return;
+    }
+    var fromFactor = currencyList[fromVal] ?? Decimal.fromInt(1);
+    var toFactor = currencyList[toVal] ?? Decimal.fromInt(1);
+
+    convertedOutput = inputValue * (toFactor / fromFactor);
+    setState(() {});
+  }
+
+  void _submitEnterAmount(String text) {
+    if (text == "") return;
+    String cleanedText = text;
+    var regExPattern = RegExp(r"(\d*[.]?\d{0,8}){1}");
+    if (regExPattern.hasMatch(text)) {
+      if (text.endsWith(".")) cleanedText = text + "0";
+      if (text.startsWith(".")) cleanedText = "0" + text;
+      var decimal = Decimal.parse(cleanedText);
+      inputValue = Decimal.parse(cleanedText);
+    } else
+      print("Error: Incorrect number format.");
+  }
+
+  String _formatCurrencyOutput() {
+    var lead = toVal == defaultSelection ? "" : toVal + " ";
+
+    var tmp = convertedOutput.toStringAsFixed(8);
+    // if (!tmp.contains(".")) return tmp;
+    var index = tmp.length - 1;
+    int trimTo = index;
+    var chars = tmp.characters.toList();
+    for (int i = index; i >= 0; i--) {
+      // Iterate until we hit not zero or get within 2 places of the period.
+      if (chars[i] == '0') {
+        trimTo = i;
+      } else
+        break;
+      int toPeriod = 1;
+      for (int j = i; chars[j] != '.'; j--) toPeriod++;
+      if (toPeriod <= 3) break;
+    }
+    var finalList = chars.sublist(0, trimTo + 1);
+    String output = "";
+    for (var char in finalList) output = output + char;
+    return lead + output;
+  }
+
   @override
   Widget build(BuildContext context) {
-    double minWidth = context.isLandscape ? 497 : 216;
+    double minWidth =
+        context.isLandscape ? _minWidthLandscape : _minWidthPortrait;
 
-    Color textColor = Colors.white;
-    TextStyle panelTextStyle = TextStyle(color: textColor, fontSize: 20);
-    TextStyle darkTextStyle = TextStyle(color: Colors.black, fontSize: 20);
+    // Turn app bar into custom title bar on desktop.
+    Widget appBarTitle;
+    List<Widget> appBarActions = <Widget>[];
+    WindowButtonColors windowButtonColors =
+        WindowButtonColors(iconNormal: Colors.white, mouseOver: Colors.black38);
 
-    LinearGradient panelGradient = LinearGradient(
-        colors: [Color(0xFFec2075), Color(0xFFf33944)], stops: [0.0, 0.5]);
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      appBarActions = [
+        MinimizeWindowButton(
+          colors: windowButtonColors,
+        ),
+        MaximizeWindowButton(colors: windowButtonColors),
+        CloseWindowButton(
+            colors: WindowButtonColors(
+                iconNormal: Colors.white,
+                mouseOver: Colors.pink[900]?.withOpacity(0.65),
+                mouseDown: Colors.pink[200])),
+      ];
+      appBarTitle =
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Expanded(
+            child: MoveWindow(
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Currency Converter",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize:
+                            Theme.of(context).textTheme.headline5?.fontSize,
+                      ),
+                    ))))
+      ]);
+    } else {
+      appBarTitle = Text(
+        "Currency Converter",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: Theme.of(context).textTheme.headline5?.fontSize,
+        ),
+      );
+    }
 
-    // Axis inputBoxDir = context.isLandscape ? Axis.horizontal : Axis.vertical;
+    var convertClearButtons = FittedBox(
+        child: Row(
+      children: [
+        // Convert Button
+        Container(
+            margin: EdgeInsets.all(6.0),
+            padding: EdgeInsets.fromLTRB(6, 4, 6, 4),
+            decoration: buttonDecoration,
+            child: TextButton(
+              child: Text("Convert", style: panelTextStyle),
+              onPressed: _calculateConversion,
+            )),
+        // Clear Button
+        Container(
+          margin: EdgeInsets.all(6.0),
+          padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+          decoration: buttonDecoration,
+          child: TextButton(
+            child: Text(
+              "Clear",
+              style: panelTextStyle,
+            ),
+            onPressed: _clearInputs,
+          ),
+        ),
+      ],
+    ));
 
-    var buttonDecoration = BoxDecoration(
-      gradient: panelGradient,
-      borderRadius: BorderRadius.all(Radius.circular(6)),
+    var primaryDisplayColumn = Column(
+      children: [
+        Text(
+          "Converted Currency",
+          style: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.bold, fontSize: 24),
+          textAlign: TextAlign.center,
+        ),
+        Text(_formatCurrencyOutput(), style: TextStyle(fontSize: 16)),
+        _buildUserInputPanel(context),
+        convertClearButtons,
+      ],
     );
 
+    return Focus(
+        focusNode: _bgNode,
+        child: GestureDetector(
+          onTap: () {
+            if (_bgNode.hasFocus) {
+              _bgNode.unfocus();
+            } else {
+              _bgNode.requestFocus();
+            }
+          },
+          child: Scaffold(
+              appBar: MainAppBar.build(
+                context,
+                titleText: "Currency Converter",
+              ),
+              drawer: Drawer(
+                child: Column(
+                  children: [
+                    DrawerHeader(
+                      child: Text("Placeholder"),
+                    )
+                  ],
+                ),
+              ),
+              body: InteractiveViewer(
+                panEnabled: true,
+                scaleEnabled: false,
+                constrained: false,
+                alignPanAxis: true,
+                child: SizedBox(
+                    width: context.width > minWidth ? context.width : minWidth,
+                    height: null,
+                    child: primaryDisplayColumn),
+              )),
+        ));
+  }
+
+  Widget _buildList(
+      String selectedVal, void Function(String) update, TextStyle textStyle) {
+    List<DropdownMenuItem<String>> dropDownItems = <DropdownMenuItem<String>>[];
+    dropDownItems.add(DropdownMenuItem(
+        child: Text(defaultSelection, style: null), value: defaultSelection));
+
+    currencyList.forEach((currency, value) {
+      dropDownItems.add(
+        DropdownMenuItem(
+            child: Text(
+              currency,
+              style: null,
+              // strutStyle:
+              // StrutStyle(forceStrutHeight: false, height: 0, leading: 0),
+            ),
+            value: currency),
+      );
+    });
+
+    var output = Container(
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.vertical(
+              top: Radius.circular(6), bottom: Radius.circular(6)),
+          color: Colors.white),
+      child: Column(
+        children: [
+          DropdownButton<String>(
+            isDense: false,
+            isExpanded: true,
+            onChanged: (String? newValue) {
+              setState(() => update(newValue ?? defaultSelection));
+            },
+            value: selectedVal,
+            items: dropDownItems,
+            dropdownColor: Colors.white,
+            underline: SizedBox.shrink(),
+          ),
+          Divider(
+            height: 0,
+            color: Colors.black54,
+            thickness: 2,
+          )
+        ],
+      ),
+    );
+    return output;
+  }
+
+  List<Widget> _buildUserInputColumns(BuildContext context) {
     var inputBoxDivider = Divider(
       height: 12,
       color: Colors.transparent,
@@ -113,19 +336,8 @@ class ConverterScreenState extends State<ConverterScreen> {
             // constraints: BoxConstraints.loose(Size.fromWidth(context.width)),
           ),
           style: TextStyle(color: Colors.black),
-          inputFormatters: [FormatNumericOnly()],
-          onChanged: (text) {
-            if (text == "") return;
-            String cleanedText = text;
-            var regExPattern = RegExp(r"(\d*[.]?\d{0,8}){1}");
-            if (regExPattern.hasMatch(text)) {
-              if (text.endsWith(".")) cleanedText = text + "0";
-              if (text.startsWith(".")) cleanedText = "0" + text;
-              var decimal = Decimal.parse(cleanedText);
-              inputValue = Decimal.parse(cleanedText);
-            } else
-              print("Error: Incorrect number format.");
-          },
+          inputFormatters: [FormatCurrencyNumeric()],
+          onChanged: _submitEnterAmount,
         ),
       ],
     );
@@ -139,7 +351,7 @@ class ConverterScreenState extends State<ConverterScreen> {
           textAlign: TextAlign.start,
         ),
         inputBoxDivider,
-        buildList(fromVal, (newVal) => fromVal = newVal, darkTextStyle),
+        _buildList(fromVal, (newVal) => fromVal = newVal, bgTextStyle),
       ],
     );
 
@@ -151,7 +363,7 @@ class ConverterScreenState extends State<ConverterScreen> {
           style: panelTextStyle,
         ),
         inputBoxDivider,
-        buildList(toVal, (newVal) => toVal = newVal, darkTextStyle),
+        _buildList(toVal, (newVal) => toVal = newVal, bgTextStyle),
       ],
     );
 
@@ -209,8 +421,12 @@ class ConverterScreenState extends State<ConverterScreen> {
       ];
     }
 
-    // Contains main user input UI
-    var selectorsBlock = Container(
+    return inputCols;
+  }
+
+  Widget _buildUserInputPanel(BuildContext context) {
+    // Main user UI block
+    return Container(
       margin: EdgeInsets.fromLTRB(20, 8, 20, 8),
       padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
       decoration: BoxDecoration(
@@ -220,273 +436,8 @@ class ConverterScreenState extends State<ConverterScreen> {
       child: Flex(
         direction: context.isLandscape ? Axis.horizontal : Axis.vertical,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: inputCols,
+        children: _buildUserInputColumns(context),
       ),
     );
-
-    Widget appBarTitle;
-    List<Widget> appBarActions = <Widget>[];
-    WindowButtonColors windowButtonColors =
-        WindowButtonColors(iconNormal: Colors.white, mouseOver: Colors.black38);
-
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      appBarActions = [
-        MinimizeWindowButton(
-          colors: windowButtonColors,
-        ),
-        MaximizeWindowButton(colors: windowButtonColors),
-        CloseWindowButton(
-            colors: WindowButtonColors(
-                iconNormal: Colors.white,
-                mouseOver: Colors.pink[900]?.withOpacity(0.65),
-                mouseDown: Colors.pink[200])),
-      ];
-      appBarTitle =
-          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Expanded(
-            child: MoveWindow(
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Currency Converter",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize:
-                            Theme.of(context).textTheme.headline5?.fontSize,
-                      ),
-                    ))))
-      ]);
-    } else {
-      appBarTitle = Text(
-        "Currency Converter",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: Theme.of(context).textTheme.headline5?.fontSize,
-        ),
-      );
-    }
-
-    return Focus(
-        focusNode: _bgNode,
-        child: GestureDetector(
-          onTap: () {
-            if (_bgNode.hasFocus) {
-              _bgNode.unfocus();
-            } else {
-              _bgNode.requestFocus();
-            }
-          },
-          child: Scaffold(
-              appBar: NewGradientAppBar(
-                title: appBarTitle,
-                gradient: panelGradient,
-                actions: appBarActions,
-              ),
-              drawer: Drawer(
-                child: Column(
-                  children: [
-                    DrawerHeader(
-                      child: Text("Placeholder"),
-                    )
-                  ],
-                ),
-              ),
-              body: InteractiveViewer(
-                panEnabled: true,
-                scaleEnabled: false,
-                constrained: false,
-                alignPanAxis: true,
-                child: SizedBox(
-                    width: context.width > minWidth ? context.width : minWidth,
-                    height: null,
-                    child: Column(
-                      children: [
-                        Text(
-                          "Converted Currency",
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24),
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                            "${toVal == defaultSelection ? "" : toVal + " "}${() {
-                              var tmp = convertedOutput.toStringAsFixed(8);
-                              // if (!tmp.contains(".")) return tmp;
-                              var index = tmp.length - 1;
-                              int trimTo = index;
-                              var chars = tmp.characters.toList();
-                              for (int i = index; i >= 0; i--) {
-                                // Iterate until we hit not zero or get within 2 places of the period.
-                                if (chars[i] == '0') {
-                                  trimTo = i;
-                                } else
-                                  break;
-                                int toPeriod = 1;
-                                for (int j = i; chars[j] != '.'; j--)
-                                  toPeriod++;
-                                if (toPeriod <= 3) break;
-                              }
-                              var finalList = chars.sublist(0, trimTo + 1);
-                              String output = "";
-                              for (var char in finalList)
-                                output = output + char;
-                              return output;
-                            }()}",
-                            style: TextStyle(fontSize: 16)),
-                        selectorsBlock,
-                        FittedBox(
-                            child: Row(
-                          children: [
-                            Container(
-                                // key: convertBtnKey,
-                                margin: EdgeInsets.all(6.0),
-                                padding: EdgeInsets.fromLTRB(6, 4, 6, 4),
-                                decoration: buttonDecoration,
-                                child: TextButton(
-                                  child: Text("Convert", style: panelTextStyle),
-                                  onPressed: calculateConversion,
-                                )),
-                            Container(
-                              margin: EdgeInsets.all(6.0),
-                              padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-                              decoration: buttonDecoration,
-                              child: TextButton(
-                                child: Text(
-                                  "Clear",
-                                  style: panelTextStyle,
-                                ),
-                                onPressed: clearInputs,
-                              ),
-                            ),
-                          ],
-                        )),
-                      ],
-                    )),
-              )),
-        ));
-  }
-
-  Widget buildList(
-      String selectedVal, void Function(String) update, TextStyle textStyle) {
-    List<DropdownMenuItem<String>> dropDownItems = <DropdownMenuItem<String>>[];
-    dropDownItems.add(DropdownMenuItem(
-        child: Text(defaultSelection, style: null), value: defaultSelection));
-
-    currencyList.forEach((currency, value) {
-      dropDownItems.add(
-        DropdownMenuItem(
-            child: Text(
-              currency,
-              style: null,
-              // strutStyle:
-              // StrutStyle(forceStrutHeight: false, height: 0, leading: 0),
-            ),
-            value: currency),
-      );
-    });
-
-    var output = Container(
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.vertical(
-              top: Radius.circular(6), bottom: Radius.circular(6)),
-          color: Colors.white),
-      child: Column(
-        children: [
-          DropdownButton<String>(
-            isDense: false,
-            isExpanded: true,
-            onChanged: (String? newValue) {
-              setState(() => update(newValue ?? defaultSelection));
-            },
-            value: selectedVal,
-            items: dropDownItems,
-            dropdownColor: Colors.white,
-            underline: SizedBox.shrink(),
-          ),
-          Divider(
-            height: 0,
-            color: Colors.black54,
-            thickness: 2,
-          )
-        ],
-      ),
-    );
-
-    return output;
-    // return DropdownButton<String>(
-    //   isExpanded: true,
-    //   onChanged: (String? newValue) {
-    //     setState(() => update(newValue ?? defaultSelection));
-    //   },
-    //   value: selectedVal,
-    //   items: dropDownItems,
-    //   dropdownColor: Colors.white,
-    //   isDense: true,
-    //   // underline: Divider(
-    //   //   color: Colors.transparent,
-    //   // ),
-    // );
-  }
-
-  void clearInputs() {
-    fromVal = defaultSelection;
-    toVal = defaultSelection;
-    enterAmountController.clear();
-    convertedOutput = Decimal.zero;
-    setState(() {});
-  }
-
-  void calculateConversion() {
-    if (fromVal == defaultSelection || toVal == defaultSelection) {
-      print("Error: Please select a currency to convert to and from.");
-      return;
-    }
-    var fromFactor = currencyList[fromVal] ?? Decimal.fromInt(1);
-    var toFactor = currencyList[toVal] ?? Decimal.fromInt(1);
-
-    convertedOutput = inputValue * (toFactor / fromFactor);
-    setState(() {});
-  }
-}
-
-class FormatNumericOnly extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    TextEditingValue result = newValue;
-    // var regExPattern = RegExp(r"\d*[.]?\d{0,4}");
-    // 16 digits before decimal, 8 after
-    int position = 0;
-    int period = -1;
-    int postPeriod = 0;
-    for (var char in newValue.text.characters) {
-      if (!char.isNumericOnly && char != '.') {
-        result = oldValue;
-        break;
-      }
-      if (char == '.') {
-        if (period == -1) {
-          period = position;
-        } else {
-          result = oldValue;
-          break;
-        }
-      }
-      if (period == -1 && position >= 16) {
-        result = oldValue;
-        break;
-      }
-      if (postPeriod > 8) {
-        result = oldValue;
-        break;
-      }
-
-      position++;
-      if (period >= 0) postPeriod++;
-    }
-
-    return result;
   }
 }
