@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 
 import 'package:currency_converter_flutter/app/theme/main_decorations.dart';
+import 'package:currency_converter_flutter/app/controllers/app_navigator.dart';
 
 class MainAppBar {
   static NewGradientAppBar build(BuildContext context,
@@ -15,6 +16,19 @@ class MainAppBar {
 
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       appBarActions = [
+        IconButton(
+          onPressed: () {
+            AppNavigator.defaultBack();
+          },
+          icon: Icon(Icons.arrow_back),
+          color: Colors.amber[300],
+        ),
+        IconButton(
+          onPressed: () {
+            AppNavigator.navigateBack();
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
         MinimizeWindowButton(
           colors: windowButtonColors,
         ),

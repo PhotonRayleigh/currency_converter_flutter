@@ -16,6 +16,7 @@ import 'package:currency_converter_flutter/app/models/currencies.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
 import 'package:currency_converter_flutter/app/theme/main_decorations.dart';
 import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
+import 'package:currency_converter_flutter/app/widgets/nav_drawer.dart';
 
 // Reminder: Flutter wrap plugin lets you use ALT-C to wrap a selection in a container,
 // and ALT-S to wrap a selection in a stack.
@@ -240,15 +241,7 @@ class ConverterScreenState extends State<ConverterScreen> {
                 context,
                 titleText: "Currency Converter",
               ),
-              drawer: Drawer(
-                child: Column(
-                  children: [
-                    DrawerHeader(
-                      child: Text("Placeholder"),
-                    )
-                  ],
-                ),
-              ),
+              drawer: NavDrawer(),
               body: InteractiveViewer(
                 panEnabled: true,
                 scaleEnabled: false,

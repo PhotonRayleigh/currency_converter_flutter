@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 
+import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
+import 'package:currency_converter_flutter/app/widgets/nav_drawer.dart';
+
 class CurrencyDbEditor extends StatefulWidget {
+  CurrencyDbEditor({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
-    throw UnimplementedError();
+    return CurrencyDbEditorState();
   }
 }
 
 class CurrencyDbEditorState extends State<CurrencyDbEditor> {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+    return Scaffold(
+      appBar: MainAppBar.build(context, titleText: "Database Editor"),
+      body: Center(
+        child: Text("Placeholder"),
+      ),
+      drawer: NavDrawer(),
+    );
   }
 }
