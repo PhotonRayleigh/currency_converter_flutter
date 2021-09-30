@@ -16,19 +16,20 @@ class MainAppBar {
 
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       appBarActions = [
-        IconButton(
-          onPressed: () {
-            AppNavigator.defaultBack();
-          },
-          icon: Icon(Icons.arrow_back),
-          color: Colors.amber[300],
-        ),
-        IconButton(
-          onPressed: () {
-            AppNavigator.navigateBack();
-          },
-          icon: Icon(Icons.arrow_back),
-        ),
+        // IconButton(
+        //   onPressed: () {
+        //     AppNavigator.defaultBack();
+        //   },
+        //   icon: Icon(Icons.arrow_back),
+        //   color: Colors.amber[300],
+        // ),
+        if (AppNavigator.currentView != AppNavigator.homeScreen)
+          IconButton(
+            onPressed: () {
+              AppNavigator.navigateBack();
+            },
+            icon: Icon(Icons.arrow_back),
+          ),
         MinimizeWindowButton(
           colors: windowButtonColors,
         ),

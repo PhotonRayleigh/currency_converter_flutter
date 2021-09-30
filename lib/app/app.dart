@@ -6,11 +6,12 @@ import 'package:spark_lib/widgets/shift_right_fixer.dart';
 import 'package:currency_converter_flutter/app/screens/converter.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
 import 'package:currency_converter_flutter/app/controllers/app_navigator.dart';
+import 'controllers/routes.dart';
 
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    AppNavigator.initialize(home: ConverterScreen());
+    AppNavigator.initialize(home: AppRoutes.converterScreen);
 
     return ShiftRightFixer(
         child: AppSystemManager(
@@ -19,7 +20,7 @@ class App extends StatelessWidget {
                 child: MaterialApp(
                   navigatorKey: AppNavigator.rootNavKey,
                   debugShowCheckedModeBanner: false,
-                  home: AppNavigator.homeScreen,
+                  home: AppRoutes.converterScreen,
                 ))));
   }
 }

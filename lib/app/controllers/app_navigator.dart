@@ -2,15 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:collection';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
-
-// The default Flutter navigator is annoying.
-// It provides basically nothing outside of the build tree
-// to access the current route info with.
-// And if you get the current route, good luck getting
-// your root Widget or learning anything about it.
-// This is causing me a lot of pain, the default Navigator
-// seems pretty lousy to me. I'd almost rather not use it,
-// but the default MaterialApp forces me to.
+import 'dart:io';
 
 class AppNavigator {
   static NavigatorState? _rootNavigator;
@@ -29,13 +21,26 @@ class AppNavigator {
 
   static late Widget homeScreen;
   static Queue<Widget> screenStack = Queue<Widget>();
-  static get currentView => screenStack.last;
+  static Widget get currentView => screenStack.last;
 
-  static bool popupOpen = false;
+  static BackModel backModel = BackModel.toHome;
 
-  static initialize({required home}) {
+  static initialize(
+      {required Widget home, BackModel backModel = BackModel.toHome}) {
+    // Setup home and screen stack
     AppNavigator.homeScreen = home;
     screenStack.add(AppNavigator.homeScreen);
+
+    // Setup back model for navigation
+    AppNavigator.backModel = backModel;
+    switch (backModel) {
+      case (BackModel.toHome):
+        navigateTo = _toHomeNavigateTo;
+        break;
+      case (BackModel.inOut):
+        navigateTo = _inOutNavigateTo;
+        break;
+    }
 
     bool navigationOverride(bool stopDefaultbuttonEvent, RouteInfo info) {
       if (screenStack.length == 1) return false;
@@ -44,17 +49,10 @@ class AppNavigator {
     }
 
     // WARNING: This will break backing out of popups.
-    BackButtonInterceptor.add(navigationOverride);
+    // BackButtonInterceptor.add(navigationOverride);
   }
 
-  static void navigateTo(Widget screen, {BuildContext? context}) {
-    screenStack.add(screen);
-    rootNavigator.pushReplacement(MaterialPageRoute(
-      builder: (context) {
-        return screen;
-      },
-    ));
-  }
+  static NavigationFunc navigateTo = _toHomeNavigateTo;
 
   static void navigateBack({BuildContext? context}) {
     if (screenStack.length == 1) return;
@@ -67,7 +65,45 @@ class AppNavigator {
     // if (rootNavigator.canPop()) rootNavigator.pop();
   }
 
-  static void defaultBack() {
+  static void _inOutNavigateTo(Widget screen, {BuildContext? context}) {
+    screenStack.add(screen);
+    rootNavigator.pushReplacement(MaterialPageRoute(
+      builder: (context) {
+        return screen;
+      },
+    ));
+  }
+
+  static void _toHomeNavigateTo(Widget screen, {BuildContext? context}) {
+    // Default navigation behavior is to make the back
+    // button take you towards the home screen.
+    if (screen == homeScreen) {
+      screenStack.clear();
+    }
+    screenStack.add(screen);
+    rootNavigator.pushReplacement(MaterialPageRoute(
+      builder: (context) {
+        return screen;
+      },
+    ));
+  }
+
+  static void safePop() {
     if (rootNavigator.canPop()) rootNavigator.pop();
   }
+
+  static Future<bool> defaultOnWillPop() {
+    // Quits to launcher if back button is pressed at home
+    AppNavigator.navigateBack();
+    if (Platform.isAndroid || Platform.isIOS) {
+      if (currentView == homeScreen && !rootNavigator.canPop())
+        return Future<bool>(() => true);
+    }
+    return Future<bool>(() => false);
+  }
 }
+
+// inOut means back always takes you to the last navigated screen
+// toHome means back always takes you towards home
+enum BackModel { inOut, toHome }
+typedef NavigationFunc = void Function(Widget screen, {BuildContext? context});

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:currency_converter_flutter/app/controllers/app_navigator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -46,8 +47,12 @@ class ConverterScreenState extends State<ConverterScreen> {
   var convertedOutput = Decimal.zero;
   var inputValue = Decimal.zero;
 
-  static double _minWidthLandscape = 497;
-  static double _minWidthPortrait = 216;
+  static const double _minWidthLandscape = 497;
+  static const double _minWidthPortrait = 216;
+
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
+
+  void useScaffoldKey() {}
 
   @override
   void initState() {
@@ -141,49 +146,6 @@ class ConverterScreenState extends State<ConverterScreen> {
     double minWidth =
         context.isLandscape ? _minWidthLandscape : _minWidthPortrait;
 
-    // Turn app bar into custom title bar on desktop.
-    Widget appBarTitle;
-    List<Widget> appBarActions = <Widget>[];
-    WindowButtonColors windowButtonColors =
-        WindowButtonColors(iconNormal: Colors.white, mouseOver: Colors.black38);
-
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      appBarActions = [
-        MinimizeWindowButton(
-          colors: windowButtonColors,
-        ),
-        MaximizeWindowButton(colors: windowButtonColors),
-        CloseWindowButton(
-            colors: WindowButtonColors(
-                iconNormal: Colors.white,
-                mouseOver: Colors.pink[900]?.withOpacity(0.65),
-                mouseDown: Colors.pink[200])),
-      ];
-      appBarTitle =
-          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Expanded(
-            child: MoveWindow(
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Currency Converter",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize:
-                            Theme.of(context).textTheme.headline5?.fontSize,
-                      ),
-                    ))))
-      ]);
-    } else {
-      appBarTitle = Text(
-        "Currency Converter",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: Theme.of(context).textTheme.headline5?.fontSize,
-        ),
-      );
-    }
-
     var convertClearButtons = FittedBox(
         child: Row(
       children: [
@@ -226,33 +188,37 @@ class ConverterScreenState extends State<ConverterScreen> {
       ],
     );
 
-    return Focus(
-        focusNode: _bgNode,
-        child: GestureDetector(
-          onTap: () {
-            if (_bgNode.hasFocus) {
-              _bgNode.unfocus();
-            } else {
-              _bgNode.requestFocus();
-            }
-          },
-          child: Scaffold(
-              appBar: MainAppBar.build(
-                context,
-                titleText: "Currency Converter",
-              ),
-              drawer: NavDrawer(),
-              body: InteractiveViewer(
-                panEnabled: true,
-                scaleEnabled: false,
-                constrained: false,
-                alignPanAxis: true,
-                child: SizedBox(
-                    width: context.width > minWidth ? context.width : minWidth,
-                    height: null,
-                    child: primaryDisplayColumn),
-              )),
-        ));
+    return WillPopScope(
+        onWillPop: AppNavigator.defaultOnWillPop,
+        child: Focus(
+            focusNode: _bgNode,
+            child: GestureDetector(
+              onTap: () {
+                if (_bgNode.hasFocus) {
+                  _bgNode.unfocus();
+                } else {
+                  _bgNode.requestFocus();
+                }
+              },
+              child: Scaffold(
+                  key: scaffoldKey,
+                  appBar: MainAppBar.build(
+                    context,
+                    titleText: "Currency Converter",
+                  ),
+                  drawer: NavDrawer(),
+                  body: InteractiveViewer(
+                    panEnabled: true,
+                    scaleEnabled: false,
+                    constrained: false,
+                    alignPanAxis: true,
+                    child: SizedBox(
+                        width:
+                            context.width > minWidth ? context.width : minWidth,
+                        height: null,
+                        child: primaryDisplayColumn),
+                  )),
+            )));
   }
 
   Widget _buildList(

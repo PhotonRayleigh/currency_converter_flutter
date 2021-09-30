@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:currency_converter_flutter/app/screens/db_editor.dart';
 import 'package:currency_converter_flutter/app/controllers/app_navigator.dart';
 import 'package:currency_converter_flutter/app/screens/converter.dart';
+import '../controllers/routes.dart';
 
 class NavDrawer extends StatelessWidget {
   NavDrawer({Key? key}) : super(key: key);
@@ -20,24 +21,26 @@ class NavDrawer extends StatelessWidget {
               child: ListView(
             scrollDirection: Axis.vertical,
             children: [
-              ListTile(
-                  title: Text("Currency Converter"),
-                  onTap: () {
-                    if (AppNavigator.currentView is ConverterScreen) {
-                      AppNavigator.rootNavigator.pop();
-                      return;
-                    }
-                    AppNavigator.navigateTo(ConverterScreen());
-                  }),
-              ListTile(
-                  title: Text("Database Editor"),
-                  onTap: () {
-                    if (AppNavigator.currentView is CurrencyDbEditor) {
-                      AppNavigator.rootNavigator.pop();
-                      return;
-                    }
-                    AppNavigator.navigateTo(CurrencyDbEditor());
-                  }),
+              if (AppNavigator.currentView != AppRoutes.converterScreen)
+                ListTile(
+                    title: Text("Currency Converter"),
+                    onTap: () {
+                      if (AppNavigator.currentView is ConverterScreen) {
+                        AppNavigator.safePop();
+                        return;
+                      }
+                      AppNavigator.navigateTo(AppRoutes.converterScreen);
+                    }),
+              if (AppNavigator.currentView != AppRoutes.currencyDbEditor)
+                ListTile(
+                    title: Text("Database Editor"),
+                    onTap: () {
+                      if (AppNavigator.currentView is CurrencyDbEditor) {
+                        AppNavigator.safePop();
+                        return;
+                      }
+                      AppNavigator.navigateTo(AppRoutes.currencyDbEditor);
+                    }),
             ],
           ))
         ],
