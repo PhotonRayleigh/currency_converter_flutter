@@ -60,26 +60,27 @@ class ConverterScreenState extends State<ConverterScreen> {
 
     _bgNode = FocusNode();
 
-    void updateOnScreenResize() {
-      height = amtColKey.currentContext?.size?.height ?? 1.0;
-      // submitButtonWidth = convertBtnKey.currentContext?.size?.width;
-      // print(height);
-      setState(() {});
-    }
+    _addCallback();
 
-    void addCallback() {
-      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-        updateOnScreenResize();
-      });
-    }
+    appManager.onScreenChanged.add(_addCallback);
+  }
 
-    addCallback();
+  void _updateOnScreenResize() {
+    height = amtColKey.currentContext?.size?.height ?? 1.0;
+    // submitButtonWidth = convertBtnKey.currentContext?.size?.width;
+    // print(height);
+    setState(() {});
+  }
 
-    appManager.onScreenChanged.add(addCallback);
+  void _addCallback() {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      _updateOnScreenResize();
+    });
   }
 
   @override
   void dispose() {
+    appManager.onScreenChanged.remove(_addCallback);
     _bgNode.dispose();
     super.dispose();
   }
