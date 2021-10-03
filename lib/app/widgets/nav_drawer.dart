@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
+import 'package:spark_lib/navigation/app_navigator.dart';
+
 import 'package:currency_converter_flutter/app/screens/db_editor.dart';
-import 'package:currency_converter_flutter/app/controllers/app_navigator.dart';
 import 'package:currency_converter_flutter/app/screens/converter.dart';
 import '../controllers/routes.dart';
 

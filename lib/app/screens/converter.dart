@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:currency_converter_flutter/app/controllers/app_navigator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -12,6 +11,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'dart:io';
 
 import 'package:spark_lib/strings/text_formatters.dart';
+import 'package:spark_lib/navigation/spark_nav.dart';
 
 import 'package:currency_converter_flutter/app/models/currencies.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
@@ -38,7 +38,7 @@ class ConverterScreenState extends State<ConverterScreen> {
   late FocusNode _bgNode;
 
   // double? submitButtonWidth;
-  // var convertBtnKey = GlobalKey(debugLabel: "convert button key");
+  // var convertBtnKey = GlobalKey(debugLabel: "conv ert button key");
 
   var amtColKey = GlobalKey(debugLabel: "Amount Key");
   var height = 1.0;
@@ -189,8 +189,7 @@ class ConverterScreenState extends State<ConverterScreen> {
       ],
     );
 
-    return WillPopScope(
-        onWillPop: AppNavigator.defaultOnWillPop,
+    return SparkPage(
         child: Focus(
             focusNode: _bgNode,
             child: GestureDetector(

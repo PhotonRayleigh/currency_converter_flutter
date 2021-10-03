@@ -3,8 +3,9 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'dart:io';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 
+import 'package:spark_lib/navigation/app_navigator.dart';
+
 import 'package:currency_converter_flutter/app/theme/main_decorations.dart';
-import 'package:currency_converter_flutter/app/controllers/app_navigator.dart';
 
 class MainAppBar {
   static NewGradientAppBar build(BuildContext context,
