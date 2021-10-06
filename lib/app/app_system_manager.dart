@@ -36,7 +36,29 @@ class _AppSystemManagerState extends State<AppSystemManager>
     appManager = this;
   }
 
-  List<void Function()> onScreenChanged = <void Function()>[];
+  List<void Function()> _onScreenChanged = <void Function()>[];
+  void addScreenChanged(void Function() callback) {
+    // prevent duplicate entries
+    if (_onScreenChanged.contains(callback))
+      return;
+    else
+      _onScreenChanged.add(callback);
+  }
+
+  void removeScreenChanged(void Function() callback) =>
+      _onScreenChanged.remove(callback);
+
+  // List<void Function()> _onShutdown = <void Function()>[];
+  // void addOnShutdown(void Function() callback) {
+  //   // prevent duplicate entries
+  //   if (_onShutdown.contains(callback))
+  //     return;
+  //   else
+  //     _onShutdown.add(callback);
+  // }
+
+  // void removeOnShutdown(void Function() callback) =>
+  //     _onShutdown.remove(callback);
 
   @override
   initState() {
@@ -44,8 +66,25 @@ class _AppSystemManagerState extends State<AppSystemManager>
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
     WidgetsBinding.instance!.addObserver(this);
+
+    // _setupShutdown();
+
     Get.put(this);
   }
+
+  // Doesn't seem to work :/ 10/5/2021
+  // Future _setupShutdown() async {
+  //   Shutdown.triggerOnSigHup();
+  //   Shutdown.triggerOnSigInt();
+
+  //   Shutdown.addHandler(() async {
+  //     for (var callback in _onShutdown) {
+  //       callback();
+  //     }
+  //   });
+
+  //   await Shutdown.shutdown();
+  // }
 
   @override
   void dispose() {
@@ -89,7 +128,7 @@ class _AppSystemManagerState extends State<AppSystemManager>
     // This actually gets called every time the view is resized.
     // There are other ways to handle screen size changes, which may be better suited
     // than using this callback.
-    for (var action in onScreenChanged) {
+    for (var action in _onScreenChanged) {
       action();
     }
   }

@@ -62,7 +62,7 @@ class ConverterScreenState extends State<ConverterScreen> {
 
     _addCallback();
 
-    appManager.onScreenChanged.add(_addCallback);
+    appManager.addScreenChanged(_addCallback);
   }
 
   void _updateOnScreenResize() {
@@ -80,7 +80,7 @@ class ConverterScreenState extends State<ConverterScreen> {
 
   @override
   void dispose() {
-    appManager.onScreenChanged.remove(_addCallback);
+    appManager.removeScreenChanged(_addCallback);
     _bgNode.dispose();
     super.dispose();
   }
