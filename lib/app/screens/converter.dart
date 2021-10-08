@@ -1,14 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 // import 'package:win32/win32.dart';
 import 'package:decimal/decimal.dart';
-import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'dart:io';
 
 import 'package:spark_lib/strings/text_formatters.dart';
 import 'package:spark_lib/navigation/spark_nav.dart';
@@ -18,6 +13,7 @@ import 'package:currency_converter_flutter/app/app_system_manager.dart';
 import 'package:currency_converter_flutter/app/theme/main_decorations.dart';
 import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
 import 'package:currency_converter_flutter/app/widgets/nav_drawer.dart';
+import '../misc/clean_and_parse_decimal.dart';
 
 // Reminder: Flutter wrap plugin lets you use ALT-C to wrap a selection in a container,
 // and ALT-S to wrap a selection in a stack.
@@ -107,13 +103,9 @@ class ConverterScreenState extends State<ConverterScreen> {
 
   void _submitEnterAmount(String text) {
     if (text == "") return;
-    String cleanedText = text;
-    var regExPattern = RegExp(r"(\d*[.]?\d{0,8}){1}");
-    if (regExPattern.hasMatch(text)) {
-      if (text.endsWith(".")) cleanedText = text + "0";
-      if (text.startsWith(".")) cleanedText = "0" + text;
-      var decimal = Decimal.parse(cleanedText);
-      inputValue = Decimal.parse(cleanedText);
+    var val = cleanAndParseDecimal(text);
+    if (val != null) {
+      inputValue = val;
     } else
       print("Error: Incorrect number format.");
   }

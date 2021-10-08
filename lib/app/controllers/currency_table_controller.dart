@@ -1,4 +1,7 @@
 import 'package:spark_lib/data/cache.dart';
+import 'package:decimal/decimal.dart';
+
+import '../db_connections/mariadb_connector.dart';
 
 class CurrencyTableController {
   List<ColumnDefinition> columns = <ColumnDefinition>[];
@@ -19,6 +22,35 @@ class CurrencyTableController {
       tempRows.add(DataTableRow(columns, rowData[i]));
     }
     rows = tempRows;
+  }
+
+  Future importFromDB() async {
+    if (mariaDBConnector.connection != null) {
+      var conn = mariaDBConnector.connection!;
+      var data = await conn.query("SELECT * FROM currency_list");
+      if (data.fields.length != 3) {
+        print("Err: Database fields do not match expected columns");
+        return;
+      }
+      List<DataTableRow> tempRows = <DataTableRow>[];
+      List<List<Object>> rowData = <List<Object>>[];
+      // 1) extract rows out of the SQL data
+      for (var row in data) {
+        rowData.add([
+          row[0] as int,
+          row[1] as String,
+          Decimal.parse(row[2].toString())
+        ]);
+      }
+
+      // 2) Convert the lists into DataTableRows
+      for (var tempRowData in rowData) {
+        tempRows.add(DataTableRow(columns, tempRowData));
+      }
+      rows = tempRows;
+    } else {
+      print("Err: No database connected");
+    }
   }
 
   void setRows(List<List<Object>> newRows) {

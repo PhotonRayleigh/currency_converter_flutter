@@ -24,7 +24,7 @@ class CurrencyTable extends StatefulWidget {
       ];
 
       this.controller = CurrencyTableController(cols);
-      this.controller.importMap(currencyList);
+      // this.controller.importMap(currencyList);
 
       // var testRows = [
       //   [0, "USD", Decimal.parse("12")],
@@ -66,6 +66,8 @@ class CurrencyTableState extends State<CurrencyTable> {
             CurrencyTableController) {
       controller = GlobalCache.cacheMap["CurrencyTable"]![currentCacheID];
     }
+
+    this.controller.importFromDB().whenComplete(() => setState(() {}));
   }
 
   @override
@@ -83,13 +85,16 @@ class CurrencyTableState extends State<CurrencyTable> {
     parent!.setState(() {});
   }
 
-  void completeEditing(String currencyName, Decimal currencyValue,
-      {bool cancel = false}) {
+  void completeEditing(String currencyName, Decimal currencyValue) {
     editing = false;
     editingRow![1] = currencyName;
     editingRow![2] = currencyValue;
     editingRow = null;
-    parent!.setState(() {});
+  }
+
+  void cancelEditing() {
+    editing = false;
+    editingRow = null;
   }
 
   @override
