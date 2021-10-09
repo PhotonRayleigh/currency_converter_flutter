@@ -1,3 +1,4 @@
+import 'package:currency_converter_flutter/app/db_connections/mariadb_connector.dart';
 import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
 
@@ -89,6 +90,8 @@ class CurrencyTableState extends State<CurrencyTable> {
     editing = false;
     editingRow![1] = currencyName;
     editingRow![2] = currencyValue;
+    mariaDBConnector.updateRow(
+        editingRow![0] as int, currencyName, currencyValue);
     editingRow = null;
   }
 
@@ -120,8 +123,8 @@ class CurrencyTableState extends State<CurrencyTable> {
           IconButton(
             icon: Icon(Icons.add_circle_outline),
             onPressed: () {
-              setState(() {
-                controller.addRow();
+              controller.addRow().whenComplete(() {
+                setState(() {});
               });
             },
           ),

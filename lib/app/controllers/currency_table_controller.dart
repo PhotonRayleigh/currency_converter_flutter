@@ -26,8 +26,7 @@ class CurrencyTableController {
 
   Future importFromDB() async {
     if (mariaDBConnector.connection != null) {
-      var conn = mariaDBConnector.connection!;
-      var data = await conn.query("SELECT * FROM currency_list");
+      var data = await mariaDBConnector.getCurrencyList();
       if (data.fields.length != 3) {
         print("Err: Database fields do not match expected columns");
         return;
@@ -60,10 +59,11 @@ class CurrencyTableController {
     }
   }
 
-  void addRow({List<Object>? newRow}) {
-    if (newRow != null)
+  Future addRow({List<Object>? newRow}) async {
+    if (newRow != null) {
       rows.add(DataTableRow(columns, newRow));
-    else {
+      mariaDBConnector.insertRow(newRow[1] as String, newRow[2] as Decimal);
+    } else {
       List<Object> tempList = <Object>[];
       for (var col in columns) {
         if (col.name.toUpperCase() == "ID" && col.type == int) {
@@ -71,19 +71,25 @@ class CurrencyTableController {
         } else
           tempList.add(col.defaultVal);
       }
-      rows.add(DataTableRow(columns, tempList));
+      var finalRow = DataTableRow(columns, tempList);
+      int newID = await mariaDBConnector.insertRow(
+          tempList[1] as String, tempList[2] as Decimal);
+      finalRow[0] = newID;
+      rows.add(finalRow);
     }
   }
 
   void deleteRow(int rowID) {
+    int dbID = rows[rowID][0] as int;
     rows.removeAt(rowID);
-    if (columns[0].name == "ID" && columns[0].type == int) {
-      int i = 0;
-      for (var row in rows) {
-        row[0] = i;
-        i++;
-      }
-    }
+    // if (columns[0].name == "ID" && columns[0].type == int) {
+    //   int i = 0;
+    //   for (var row in rows) {
+    //     row[0] = i;
+    //     i++;
+    //   }
+    // }
+    mariaDBConnector.deleteRow(dbID);
   }
 
   void moveRow(int rowID, int targetID) {
@@ -114,7 +120,7 @@ class CurrencyTableController {
     cache[id] = this;
   }
 
-  void loadFromMemroy(Cache cache, int id) {
+  void loadFromMemory(Cache cache, int id) {
     if (cache[id] == null || cache[id].runtimeType != CurrencyTableController)
       throw ArgumentError.notNull("cache[$id]");
     CurrencyTableController temp = cache[id]!;
