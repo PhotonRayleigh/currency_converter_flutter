@@ -60,8 +60,8 @@ class CurrencyTableState extends State<CurrencyTable> {
 
   @override
   void dispose() {
-    controller.saveToMemory(
-        GlobalCache.cacheMap["CurrencyTable"]!, currentCacheID);
+    // controller.saveToMemory(
+    //     GlobalCache.cacheMap["CurrencyTable"]!, currentCacheID);
     cacheID--;
     super.dispose();
   }
