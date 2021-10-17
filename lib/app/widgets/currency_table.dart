@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
 
 import 'package:spark_lib/data/cache.dart';
+import 'package:spark_lib/data/dynamic_table.dart' as dt;
 
 import '../controllers/currency_table_controller.dart';
 import '../models/currencies.dart';
@@ -18,22 +19,7 @@ class CurrencyTable extends StatefulWidget {
       CurrencyTableController? controller})
       : super(key: key) {
     if (controller == null) {
-      var cols = [
-        ColumnDefinition<int>("ID", 0),
-        ColumnDefinition<String>("Currency", "null"),
-        ColumnDefinition<Decimal>("Value", Decimal.zero),
-      ];
-
-      this.controller = CurrencyTableController(cols);
-      // this.controller.importMap(currencyList);
-
-      // var testRows = [
-      //   [0, "USD", Decimal.parse("12")],
-      //   [1, "EUR", Decimal.parse("14")],
-      //   [2, "RUB", Decimal.parse("6")],
-      // ];
-
-      // this.controller.setRows(testRows);
+      this.controller = CurrencyTableController();
     } else
       this.controller = controller;
   }
@@ -51,7 +37,7 @@ class CurrencyTableState extends State<CurrencyTable> {
   CurrencyDbEditorState? parent;
   bool editing = false;
   int editingIndex = 0;
-  DataTableRow? editingRow;
+  dt.Row? editingRow;
 
   @override
   void initState() {
@@ -60,15 +46,16 @@ class CurrencyTableState extends State<CurrencyTable> {
     cacheID++;
 
     controller = widget.controller;
-    if (!GlobalCache.cacheMap.containsKey("CurrencyTable")) {
-      GlobalCache.cacheMap["CurrencyTable"] = Cache<CurrencyTableController>();
-    } else if (GlobalCache.cacheMap["CurrencyTable"]![currentCacheID] != null ||
-        GlobalCache.cacheMap["CurrencyTable"]![currentCacheID].runtimeType ==
-            CurrencyTableController) {
-      controller = GlobalCache.cacheMap["CurrencyTable"]![currentCacheID];
-    }
+    // if (!GlobalCache.cacheMap.containsKey("CurrencyTable")) {
+    //   GlobalCache.cacheMap["CurrencyTable"] = Cache<CurrencyTableController>();
+    // } else if (GlobalCache.cacheMap["CurrencyTable"]![currentCacheID] != null ||
+    //     GlobalCache.cacheMap["CurrencyTable"]![currentCacheID].runtimeType ==
+    //         CurrencyTableController) {
+    //   controller = GlobalCache.cacheMap["CurrencyTable"]![currentCacheID];
+    // }
+    controller.initialize().whenComplete(() => setState(() {}));
 
-    this.controller.importFromDB().whenComplete(() => setState(() {}));
+    // this.controller.importFromDB().whenComplete(() => setState(() {}));
   }
 
   @override
@@ -82,7 +69,7 @@ class CurrencyTableState extends State<CurrencyTable> {
   void startEditing(int rowID) {
     editing = true;
     editingIndex = rowID;
-    editingRow = controller.rows[rowID];
+    editingRow = controller.dataTable.rows[rowID];
     parent!.setState(() {});
   }
 
@@ -115,7 +102,7 @@ class CurrencyTableState extends State<CurrencyTable> {
                   color: widget.bgColor,
                   borderRadius: BorderRadius.all(Radius.circular(6))),
               columns: [
-                for (var col in controller.columns)
+                for (var col in controller.dataTable.columns)
                   DataColumn(label: Text(col.name)),
                 DataColumn(label: SizedBox()),
               ],
@@ -136,12 +123,12 @@ class CurrencyTableState extends State<CurrencyTable> {
   List<DataRow> _buildRows() {
     var rows = <DataRow>[];
     int i = 0;
-    for (var row in controller.rows) {
+    for (var row in controller.dataTable.rows) {
       var tempCells = <DataCell>[];
       var tempI = i;
-      for (var cell in row.rowData) {
-        if (cell.runtimeType == String) {
-          tempCells.add(DataCell(Text(cell as String)));
+      for (var cell in row.cells) {
+        if (cell is String) {
+          tempCells.add(DataCell(Text(cell)));
         } else {
           tempCells.add(DataCell(Text(cell.toString())));
         }

@@ -14,5 +14,6 @@
             "username": "Collin",
             "password": "wumIvO7O"
         }
-    ]
+    ],
+    "C_Cpp.default.configurationProvider": "go2sh.cmake-integration"
 }
