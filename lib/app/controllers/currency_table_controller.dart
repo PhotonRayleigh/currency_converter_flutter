@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:spark_lib/data/cache.dart';
 import 'package:decimal/decimal.dart';
 
-import 'package:spark_lib/data/dynamic_table.dart' as dt;
+import 'package:spark_lib/data/dynamic_table.dart';
 
 import '../db_connections/mariadb_connector.dart';
 
@@ -12,7 +12,7 @@ import '../db_connections/mariadb_connector.dart';
 enum dbModes { local, mariaDB, sqlite }
 
 class CurrencyTableController {
-  dt.DynamicTable dataTable = dt.DynamicTable();
+  DynamicTable dataTable = DynamicTable();
   dbModes dbMode;
   late _DataAdapter _adapter;
 
@@ -24,16 +24,16 @@ class CurrencyTableController {
     dataTable = await _adapter.fetchData();
   }
 
-  void setRows(List<dt.Row> newRows) {
+  void setRows(List<DtRow> newRows) {
     dataTable.setRows(newRows);
   }
 
-  Future addRow({dt.Row? newRow}) async {
+  Future addRow({DtRow? newRow}) async {
     if (newRow != null) {
-      dataTable.addRow(row: newRow);
+      dataTable.addRow(newRow);
       mariaDBConnector.insertRow(newRow[1] as String, newRow[2] as Decimal);
     } else {
-      dt.Row genRow = dataTable.addRow();
+      DtRow genRow = dataTable.addRow();
       int newID = await mariaDBConnector.insertRow(
           genRow[1] as String, genRow[2] as Decimal);
       genRow[0] = newID;
@@ -61,7 +61,7 @@ class CurrencyTableController {
     throw UnimplementedError();
   }
 
-  void addColumn(dt.Column newColumn) {
+  void addColumn(DtColumn newColumn) {
     throw UnimplementedError();
   }
 
@@ -93,13 +93,13 @@ class CurrencyTableController {
 class _DataAdapter {
   dbModes mode;
   _DataAdapter(this.mode);
-  List<dt.Column> columnSpec = <dt.Column>[
-    dt.Column<int>("ID", 0),
-    dt.Column<String>("Currency", "null"),
-    dt.Column<Decimal>("Value", Decimal.zero),
+  List<DtColumn> columnSpec = <DtColumn>[
+    DtColumn<int>("ID", 0),
+    DtColumn<String>("Currency", "null"),
+    DtColumn<Decimal>("Value", Decimal.zero),
   ];
 
-  Future<dt.DynamicTable> fetchData() async {
+  Future<DynamicTable> fetchData() async {
     switch (mode) {
       case dbModes.local:
         return await _fetchCachedData();
@@ -113,26 +113,26 @@ class _DataAdapter {
     }
   }
 
-  Future<dt.DynamicTable> _fetchCachedData() async {
+  Future<DynamicTable> _fetchCachedData() async {
     return defaultData();
   }
 
-  Future<dt.DynamicTable> _fetchMariaDBData() async {
+  Future<DynamicTable> _fetchMariaDBData() async {
     if (mariaDBConnector.connection == null) return defaultData();
     var data = await mariaDBConnector.getCurrencyList();
     if (data.fields.length != 3) {
       throw ErrorDescription(
           "Error: Database fields do not match expeted columns");
     }
-    dt.DynamicTable newTable = dt.DynamicTable(columns: columnSpec);
+    DynamicTable newTable = DynamicTable(columns: columnSpec);
     for (var row in data) {
       newTable.addRow(
-        row: dt.Row(
-          cells: dt.TypedList(
-            list: [
-              dt.Cell<int>(row[0]),
-              dt.Cell<String>(row[1]),
-              dt.Cell<Decimal>(Decimal.parse(row[2].toString())),
+        DtRow(
+          BoxList(
+            [
+              Box<int>(row[0]),
+              Box<String>(row[1]),
+              Box<Decimal>(Decimal.parse(row[2].toString())),
             ],
           ),
         ),
@@ -141,49 +141,43 @@ class _DataAdapter {
     return newTable;
   }
 
-  Future<dt.DynamicTable> _fetchSqliteData() async {
+  Future<DynamicTable> _fetchSqliteData() async {
     return defaultData();
   }
 
-  dt.DynamicTable defaultData() {
+  DynamicTable defaultData() {
     int i = 0;
-    var newTable = dt.DynamicTable(columns: columnSpec);
+    var newTable = DynamicTable(columns: columnSpec);
     newTable.setRows([
-      dt.Row(
-          cells: dt.TypedList(list: [
-        dt.Cell<int>(i++),
-        dt.Cell<String>("INR"),
-        dt.Cell<Decimal>(Decimal.parse('1')),
+      DtRow(BoxList([
+        Box<int>(i++),
+        Box<String>("INR"),
+        Box<Decimal>(Decimal.parse('1')),
       ])),
-      dt.Row(
-          cells: dt.TypedList(list: [
-        dt.Cell<int>(i++),
-        dt.Cell<String>("USD"),
-        dt.Cell<Decimal>(Decimal.parse('75')),
+      DtRow(BoxList([
+        Box<int>(i++),
+        Box<String>("USD"),
+        Box<Decimal>(Decimal.parse('75')),
       ])),
-      dt.Row(
-          cells: dt.TypedList(list: [
-        dt.Cell<int>(i++),
-        dt.Cell<String>("EUR"),
-        dt.Cell<Decimal>(Decimal.parse('85')),
+      DtRow(BoxList([
+        Box<int>(i++),
+        Box<String>("EUR"),
+        Box<Decimal>(Decimal.parse('85')),
       ])),
-      dt.Row(
-          cells: dt.TypedList(list: [
-        dt.Cell<int>(i++),
-        dt.Cell<String>("SAR"),
-        dt.Cell<Decimal>(Decimal.parse('20')),
+      DtRow(BoxList([
+        Box<int>(i++),
+        Box<String>("SAR"),
+        Box<Decimal>(Decimal.parse('20')),
       ])),
-      dt.Row(
-          cells: dt.TypedList(list: [
-        dt.Cell<int>(i++),
-        dt.Cell<String>("POUND"),
-        dt.Cell<Decimal>(Decimal.parse('5')),
+      DtRow(BoxList([
+        Box<int>(i++),
+        Box<String>("POUND"),
+        Box<Decimal>(Decimal.parse('5')),
       ])),
-      dt.Row(
-          cells: dt.TypedList(list: [
-        dt.Cell<int>(i++),
-        dt.Cell<String>("DEM"),
-        dt.Cell<Decimal>(Decimal.parse('43')),
+      DtRow(BoxList([
+        Box<int>(i++),
+        Box<String>("DEM"),
+        Box<Decimal>(Decimal.parse('43')),
       ])),
     ]);
     return newTable;

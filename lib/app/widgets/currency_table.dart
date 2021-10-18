@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
 
 import 'package:spark_lib/data/cache.dart';
-import 'package:spark_lib/data/dynamic_table.dart' as dt;
+import 'package:spark_lib/data/dynamic_table.dart';
 
 import '../controllers/currency_table_controller.dart';
 import '../models/currencies.dart';
@@ -37,7 +37,7 @@ class CurrencyTableState extends State<CurrencyTable> {
   CurrencyDbEditorState? parent;
   bool editing = false;
   int editingIndex = 0;
-  dt.Row? editingRow;
+  DtRow? editingRow;
 
   @override
   void initState() {
