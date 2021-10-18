@@ -128,13 +128,11 @@ class _DataAdapter {
     for (var row in data) {
       newTable.addRow(
         DtRow(
-          BoxList(
-            [
-              Box<int>(row[0]),
-              Box<String>(row[1]),
-              Box<Decimal>(Decimal.parse(row[2].toString())),
-            ],
-          ),
+          [
+            row[0] as int,
+            row[1] as String,
+            Decimal.parse(row[2].toString()),
+          ],
         ),
       );
     }
@@ -149,36 +147,36 @@ class _DataAdapter {
     int i = 0;
     var newTable = DynamicTable(columns: columnSpec);
     newTable.setRows([
-      DtRow(BoxList([
-        Box<int>(i++),
-        Box<String>("INR"),
-        Box<Decimal>(Decimal.parse('1')),
-      ])),
-      DtRow(BoxList([
-        Box<int>(i++),
-        Box<String>("USD"),
-        Box<Decimal>(Decimal.parse('75')),
-      ])),
-      DtRow(BoxList([
-        Box<int>(i++),
-        Box<String>("EUR"),
-        Box<Decimal>(Decimal.parse('85')),
-      ])),
-      DtRow(BoxList([
-        Box<int>(i++),
-        Box<String>("SAR"),
-        Box<Decimal>(Decimal.parse('20')),
-      ])),
-      DtRow(BoxList([
-        Box<int>(i++),
-        Box<String>("POUND"),
-        Box<Decimal>(Decimal.parse('5')),
-      ])),
-      DtRow(BoxList([
-        Box<int>(i++),
-        Box<String>("DEM"),
-        Box<Decimal>(Decimal.parse('43')),
-      ])),
+      DtRow([
+        i++,
+        "INR",
+        Decimal.parse('1'),
+      ]),
+      DtRow([
+        i++,
+        "USD",
+        Decimal.parse('75'),
+      ]),
+      DtRow([
+        i++,
+        "EUR",
+        Decimal.parse('85'),
+      ]),
+      DtRow([
+        i++,
+        "SAR",
+        Decimal.parse('20'),
+      ]),
+      DtRow([
+        i++,
+        "POUND",
+        Decimal.parse('5'),
+      ]),
+      DtRow([
+        i++,
+        "DEM",
+        Decimal.parse('43'),
+      ]),
     ]);
     return newTable;
   }
