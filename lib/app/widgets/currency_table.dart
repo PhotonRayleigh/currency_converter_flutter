@@ -6,7 +6,7 @@ import 'package:spark_lib/data/cache.dart';
 import 'package:spark_lib/data/dynamic_table.dart';
 
 import '../controllers/currency_table_controller.dart';
-import '../models/currencies.dart';
+import '../data/currencies.dart';
 import '../screens/db_editor.dart';
 
 class CurrencyTable extends StatefulWidget {

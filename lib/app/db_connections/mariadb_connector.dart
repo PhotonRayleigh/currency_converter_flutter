@@ -1,9 +1,11 @@
 import 'package:mysql1/mysql1.dart';
 import 'package:decimal/decimal.dart';
+import 'dart:async';
 
 final _MariaDBConnector mariaDBConnector = _MariaDBConnector();
 
 class _MariaDBConnector {
+  late Future waitReady;
   MySqlConnection? connection;
 
   var settings = ConnectionSettings(
@@ -15,8 +17,11 @@ class _MariaDBConnector {
   );
 
   Future<bool> initializeConnection() async {
+    var waiting = Completer();
+    waitReady = waiting.future;
     try {
       connection = await MySqlConnection.connect(settings);
+      waiting.complete();
       return true;
     } on Exception catch (e) {
       print(e.toString());
@@ -27,6 +32,7 @@ class _MariaDBConnector {
   void saveTable(List<List<Object>> data) {}
 
   Future<Results> getCurrencyList() async {
+    await waitReady;
     return await connection!.query("SELECT * FROM currency_list");
   }
 

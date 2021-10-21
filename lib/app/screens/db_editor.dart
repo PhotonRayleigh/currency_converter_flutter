@@ -3,6 +3,7 @@ import 'package:decimal/decimal.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'dart:io';
+import 'package:get/get.dart';
 
 import 'package:spark_lib/navigation/spark_nav.dart';
 import 'package:spark_lib/data/cache.dart';
@@ -11,7 +12,7 @@ import 'package:spark_lib/strings/text_formatters.dart';
 import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
 import 'package:currency_converter_flutter/app/widgets/nav_drawer.dart';
 import '../theme/main_decorations.dart';
-import '../models/currencies.dart';
+import '../data/currencies.dart';
 import '../controllers/currency_table_controller.dart';
 import '../widgets/currency_table.dart';
 import '../misc/clean_and_parse_decimal.dart';
@@ -31,6 +32,36 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
   var valueInput = TextEditingController();
   var tableKey = GlobalKey<CurrencyTableState>();
   bool editing = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    AppNavigator.preNavCallbacks.add(
+      () async {
+        var tController = tableKey.currentState!.controller;
+        if (tController.isDirty) {
+          await tController.submitChanges().whenComplete(() {
+            var data = sharedCurrencyData!;
+            data.names = [];
+            data.values = [];
+            for (var row in tController.dataTable.rows) {
+              data.names.add(row[localNameCol]);
+              data.values.add(row[localValueCol]);
+            }
+          });
+        } else {
+          var data = sharedCurrencyData!;
+          data.names = <String>[];
+          data.values = <Decimal>[];
+          for (var row in tController.dataTable.rows) {
+            data.names.add(row[localNameCol]);
+            data.values.add(row[localValueCol]);
+          }
+        }
+      },
+    );
+  }
 
   void enterEditMode() {
     var tableState = tableKey.currentState!;

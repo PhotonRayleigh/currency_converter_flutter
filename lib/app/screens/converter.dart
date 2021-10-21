@@ -8,7 +8,7 @@ import 'package:decimal/decimal.dart';
 import 'package:spark_lib/strings/text_formatters.dart';
 import 'package:spark_lib/navigation/spark_nav.dart';
 
-import 'package:currency_converter_flutter/app/models/currencies.dart';
+import 'package:currency_converter_flutter/app/data/currencies.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
 import 'package:currency_converter_flutter/app/theme/main_decorations.dart';
 import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
@@ -48,11 +48,18 @@ class ConverterScreenState extends State<ConverterScreen> {
 
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
 
+  CurrencyData? currencyData;
+
   void useScaffoldKey() {}
 
   @override
   void initState() {
     super.initState();
+
+    if (sharedCurrencyData == null) {
+      sharedCurrencyData = CurrencyData();
+    }
+    currencyData = sharedCurrencyData;
 
     _bgNode = FocusNode();
 
@@ -94,8 +101,11 @@ class ConverterScreenState extends State<ConverterScreen> {
       print("Error: Please select a currency to convert to and from.");
       return;
     }
-    var fromFactor = currencyList[fromVal] ?? Decimal.fromInt(1);
-    var toFactor = currencyList[toVal] ?? Decimal.fromInt(1);
+    var fromFactor =
+        currencyData?.values[currencyData!.names.indexOf(fromVal)] ??
+            Decimal.fromInt(1);
+    var toFactor = currencyData?.values[currencyData!.names.indexOf(toVal)] ??
+        Decimal.fromInt(1);
 
     convertedOutput = inputValue * (toFactor / fromFactor);
     setState(() {});
@@ -219,18 +229,18 @@ class ConverterScreenState extends State<ConverterScreen> {
     dropDownItems.add(DropdownMenuItem(
         child: Text(defaultSelection, style: null), value: defaultSelection));
 
-    currencyList.forEach((currency, value) {
-      dropDownItems.add(
-        DropdownMenuItem(
+    if (currencyData != null && currencyData!.ready) {
+      for (int i = 0; i < currencyData!.names.length; i++) {
+        dropDownItems.add(DropdownMenuItem(
             child: Text(
-              currency,
+              currencyData!.names[i],
               style: null,
               // strutStyle:
               // StrutStyle(forceStrutHeight: false, height: 0, leading: 0),
             ),
-            value: currency),
-      );
-    });
+            value: currencyData!.names[i]));
+      }
+    }
 
     var output = Container(
       clipBehavior: Clip.hardEdge,
