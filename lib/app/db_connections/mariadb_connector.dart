@@ -48,3 +48,11 @@ class _MariaDBConnector {
         [currency, value.toString(), id]);
   }
 }
+
+// class SQLCommand {
+//   String command = "";
+//   List<dynamic> arguments = <dynamic>[];
+//   void addUpdateRow(){}
+//   void addDeleteRow(){}
+//   void addInsertRow(){}
+// }

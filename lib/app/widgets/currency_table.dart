@@ -75,10 +75,9 @@ class CurrencyTableState extends State<CurrencyTable> {
 
   void completeEditing(String currencyName, Decimal currencyValue) {
     editing = false;
-    editingRow![1] = currencyName;
-    editingRow![2] = currencyValue;
-    mariaDBConnector.updateRow(
-        editingRow![0] as int, currencyName, currencyValue);
+    controller.updateRow(editingIndex, currencyName, currencyValue);
+    // mariaDBConnector.updateRow(
+    //     editingRow![0] as int, currencyName, currencyValue);
     editingRow = null;
   }
 
@@ -111,7 +110,7 @@ class CurrencyTableState extends State<CurrencyTable> {
             icon: Icon(Icons.add_circle_outline),
             onPressed: () {
               controller.addRow().whenComplete(() {
-                setState(() {});
+                parent!.setState(() {});
               });
             },
           ),
@@ -150,7 +149,7 @@ class CurrencyTableState extends State<CurrencyTable> {
               color: Colors.red[800],
               visualDensity: VisualDensity.compact,
               onPressed: () {
-                setState(() {
+                parent!.setState(() {
                   controller.deleteRow(tempI);
                 });
               }),

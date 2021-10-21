@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
+import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'dart:io';
 
 import 'package:spark_lib/navigation/spark_nav.dart';
 import 'package:spark_lib/data/cache.dart';
@@ -31,18 +34,20 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
 
   void enterEditMode() {
     var tableState = tableKey.currentState!;
-    currencyInput.text = tableState.editingRow![1] as String;
-    valueInput.text = tableState.editingRow![2].toString();
+    currencyInput.text = tableState.editingRow![localNameCol] as String;
+    valueInput.text = tableState.editingRow![localValueCol].toString();
     editing = true;
   }
 
   @override
   Widget build(BuildContext context) {
-    //TODO: Add code to check for editing mode and set the UI accordingly
-    bool editMode = tableKey.currentState?.editing ?? false;
+    var tableState = tableKey.currentState;
+    bool editMode = tableState?.editing ?? false;
     if (editMode && !editing) {
       enterEditMode();
     }
+
+    bool tableDirty = tableState?.controller.isDirty ?? false;
 
     void Function()? updateButton;
     void Function()? cancelButton;
@@ -219,7 +224,11 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
 
     return SparkPage(
         child: Scaffold(
-      appBar: MainAppBar.build(context, titleText: "Database Editor"),
+      appBar: customAppBar(
+        context,
+        tableDirty,
+        titleText: "Database Editor",
+      ),
       body: Column(
         children: [
           inputsPanel,
@@ -232,7 +241,93 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
           ),
         ],
       ),
-      drawer: NavDrawer(),
+      drawer: tableDirty ? null : NavDrawer(),
     ));
+  }
+
+  NewGradientAppBar customAppBar(BuildContext context, bool tableDirty,
+      {Key? key, required titleText}) {
+    Widget appBarTitle;
+    List<Widget> appBarActions = [];
+    WindowButtonColors windowButtonColors =
+        WindowButtonColors(iconNormal: Colors.white, mouseOver: Colors.black38);
+
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      appBarActions = [
+        // IconButton(
+        //   onPressed: () {
+        //     AppNavigator.defaultBack();
+        //   },
+        //   icon: Icon(Icons.arrow_back),
+        //   color: Colors.amber[300],
+        // ),
+        if (AppNavigator.currentView != AppNavigator.homeScreen)
+          tableDirty
+              ? Row(
+                  children: [
+                    TextButton(
+                      child: Text("Save"),
+                      onPressed: () {
+                        var tableState = tableKey.currentState;
+                        tableState!.controller
+                            .submitChanges()
+                            .whenComplete(() => setState(() {}));
+                      },
+                    ),
+                    TextButton(
+                        child: Text("Discard"),
+                        onPressed: () {
+                          var tableState = tableKey.currentState;
+                          tableState!.controller.discardChanges();
+                          setState(() {});
+                        })
+                  ],
+                )
+              : IconButton(
+                  onPressed: () {
+                    AppNavigator.navigateBack();
+                  },
+                  icon: Icon(Icons.arrow_back),
+                ),
+        MinimizeWindowButton(
+          colors: windowButtonColors,
+        ),
+        MaximizeWindowButton(colors: windowButtonColors),
+        CloseWindowButton(
+            colors: WindowButtonColors(
+                iconNormal: Colors.white,
+                mouseOver: Colors.pink[900]?.withOpacity(0.65),
+                mouseDown: Colors.pink[200])),
+      ];
+      appBarTitle =
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Expanded(
+            child: MoveWindow(
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      titleText,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize:
+                            Theme.of(context).textTheme.headline5?.fontSize,
+                      ),
+                    ))))
+      ]);
+    } else {
+      appBarTitle = Text(
+        titleText,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: Theme.of(context).textTheme.headline5?.fontSize,
+        ),
+      );
+    }
+
+    return NewGradientAppBar(
+      title: appBarTitle,
+      gradient: panelGradient,
+      actions: appBarActions,
+    );
   }
 }

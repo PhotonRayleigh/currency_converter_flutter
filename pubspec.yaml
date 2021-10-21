@@ -40,6 +40,7 @@ dependencies:
   back_button_interceptor: ^5.0.2
   shutdown: ^0.4.3
   mysql1: ^0.19.2
+  more: ^3.3.0
 
 
   # The following adds the Cupertino Icons font to your application.
