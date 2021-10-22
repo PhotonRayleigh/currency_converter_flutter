@@ -18,14 +18,24 @@ class _MariaDBConnector {
 
   Future<bool> initializeConnection() async {
     var waiting = Completer();
-    waitReady = waiting.future;
-    try {
-      connection = await MySqlConnection.connect(settings);
-      waiting.complete();
+    if (connection == null) {
+      waitReady = waiting.future;
+      try {
+        connection = await MySqlConnection.connect(settings);
+        waiting.complete();
+        return true;
+      } on Exception catch (e) {
+        print(e.toString());
+        return false;
+      }
+    } else {
       return true;
-    } on Exception catch (e) {
-      print(e.toString());
-      return false;
+    }
+  }
+
+  Future closeConnection() async {
+    if (mariaDBConnector.connection != null) {
+      await connection!.close();
     }
   }
 

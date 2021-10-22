@@ -1,4 +1,3 @@
-import 'package:currency_converter_flutter/app/db_connections/mariadb_connector.dart';
 import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
 
@@ -6,7 +5,6 @@ import 'package:spark_lib/data/cache.dart';
 import 'package:spark_lib/data/dynamic_table.dart';
 
 import '../controllers/currency_table_controller.dart';
-import '../data/currencies.dart';
 import '../screens/db_editor.dart';
 
 class CurrencyTable extends StatefulWidget {

@@ -1,8 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:io';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'db_connections/mariadb_connector.dart';
+import 'db_connections/sqlite_connector.dart';
 
 /*
     AppSystemManager class:
@@ -69,18 +73,16 @@ class _AppSystemManagerState extends State<AppSystemManager>
     WidgetsFlutterBinding.ensureInitialized();
     WidgetsBinding.instance!.addObserver(this);
 
-    if (mariaDBConnector.connection == null) {
-      var completer = mariaDBConnector.initializeConnection();
-      completer.then((value) {
-        if (value) {
-          print("MariaDB connection established");
-        } else {
-          print("MariaDB connection failed");
-        }
-      });
-    }
+    var completer = mariaDBConnector.initializeConnection();
+    completer.then((value) {
+      if (value) {
+        print("MariaDB connection established");
+      } else {
+        print("MariaDB connection failed");
+      }
+    });
 
-    // _setupShutdown();
+    sqliteConnector.openDB();
 
     Get.put(this);
   }
@@ -102,9 +104,8 @@ class _AppSystemManagerState extends State<AppSystemManager>
   @override
   void dispose() async {
     // Clean up operations can go in the dispose section
-    if (mariaDBConnector.connection != null) {
-      await mariaDBConnector.connection!.close();
-    }
+    mariaDBConnector.closeConnection();
+    sqliteConnector.closeDB();
     Get.delete<_AppSystemManagerState>();
     WidgetsBinding.instance!.removeObserver(this);
     super
