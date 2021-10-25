@@ -60,6 +60,7 @@ class ConverterScreenState extends State<ConverterScreen> {
       sharedCurrencyData = CurrencyData();
     }
     currencyData = sharedCurrencyData;
+    currencyData!.fetchingData.whenComplete(() => setState(() {}));
 
     _bgNode = FocusNode();
 
