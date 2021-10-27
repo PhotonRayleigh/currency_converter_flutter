@@ -1,9 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:io';
-import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'db_connections/mariadb_connector.dart';
 import 'db_connections/sqlite_connector.dart';
@@ -73,14 +70,16 @@ class _AppSystemManagerState extends State<AppSystemManager>
     WidgetsFlutterBinding.ensureInitialized();
     WidgetsBinding.instance!.addObserver(this);
 
-    var completer = mariaDBConnector.initializeConnection();
-    completer.then((value) {
-      if (value) {
-        print("MariaDB connection established");
-      } else {
-        print("MariaDB connection failed");
-      }
-    });
+    if (useMariaDB) {
+      var completer = mariaDBConnector.initializeConnection();
+      completer.then((value) {
+        if (value) {
+          print("MariaDB connection established");
+        } else {
+          print("MariaDB connection failed");
+        }
+      });
+    }
 
     sqliteConnector.openDB();
 

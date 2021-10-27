@@ -3,17 +3,14 @@ import 'package:decimal/decimal.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'dart:io';
-import 'package:get/get.dart';
 
 import 'package:spark_lib/navigation/spark_nav.dart';
-import 'package:spark_lib/data/cache.dart';
 import 'package:spark_lib/strings/text_formatters.dart';
 
 import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
 import 'package:currency_converter_flutter/app/widgets/nav_drawer.dart';
 import '../theme/main_decorations.dart';
 import '../data/currencies.dart';
-import '../controllers/currency_table_controller.dart';
 import '../widgets/currency_table.dart';
 import '../misc/clean_and_parse_decimal.dart';
 import '../db_connections/mariadb_connector.dart';
@@ -353,6 +350,30 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
           fontSize: Theme.of(context).textTheme.headline5?.fontSize,
         ),
       );
+      appBarActions = tableDirty
+          ? [
+              Row(
+                children: [
+                  TextButton(
+                    child: Text("Save"),
+                    onPressed: () {
+                      var tableState = tableKey.currentState;
+                      tableState!.controller
+                          .submitChanges()
+                          .whenComplete(() => setState(() {}));
+                    },
+                  ),
+                  TextButton(
+                      child: Text("Discard"),
+                      onPressed: () {
+                        var tableState = tableKey.currentState;
+                        tableState!.controller.discardChanges();
+                        setState(() {});
+                      })
+                ],
+              )
+            ]
+          : [];
     }
 
     return NewGradientAppBar(

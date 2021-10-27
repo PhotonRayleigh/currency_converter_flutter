@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
 
-import 'package:spark_lib/data/cache.dart';
-import 'package:spark_lib/data/dynamic_table.dart';
-
 import '../controllers/currency_table_controller.dart';
 import '../screens/db_editor.dart';
 

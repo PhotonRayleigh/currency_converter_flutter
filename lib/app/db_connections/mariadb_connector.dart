@@ -2,13 +2,16 @@ import 'package:mysql1/mysql1.dart';
 import 'package:decimal/decimal.dart';
 import 'dart:async';
 
+bool useMariaDB = false;
+
 final _MariaDBConnector mariaDBConnector = _MariaDBConnector();
 
 class _MariaDBConnector {
   late Future waitReady;
   MySqlConnection? connection;
 
-  var settings = ConnectionSettings(
+  // TODO: Clear this out
+  ConnectionSettings? settings = ConnectionSettings(
     host: 'localhost',
     port: 3306,
     user: 'Collin',
@@ -18,10 +21,14 @@ class _MariaDBConnector {
 
   Future<bool> initializeConnection() async {
     var waiting = Completer();
+    if (ConnectionSettings == null) {
+      print("Error: Connection Settings not set for MariaDB connection");
+      return false;
+    }
     if (connection == null) {
       waitReady = waiting.future;
       try {
-        connection = await MySqlConnection.connect(settings);
+        connection = await MySqlConnection.connect(settings!);
         waiting.complete();
         return true;
       } on Exception catch (e) {

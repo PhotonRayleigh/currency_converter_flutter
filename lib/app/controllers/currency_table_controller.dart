@@ -4,8 +4,6 @@ import 'package:spark_lib/data/cache.dart';
 import 'package:decimal/decimal.dart';
 import 'package:more/collection.dart';
 
-import 'package:spark_lib/data/dynamic_table.dart';
-
 import '../db_connections/mariadb_connector.dart';
 
 // Current status: No errors thrown at runtime, but
@@ -79,7 +77,7 @@ class CurrencyTableController {
     throw UnimplementedError();
   }
 
-  void addColumn(DtColumn newColumn) {
+  void addColumn(MapRow newColumn) {
     throw UnimplementedError();
   }
 
@@ -150,7 +148,76 @@ class _DataAdapter {
   late Future Function() submitChanges;
 
   Future _submitChangesSqlite() async {
-    // TODO
+    // Note: local data is store as int, String, Decimal
+    // Database data is stored as int, String, String
+    // Make sure to correctly convert during transactions.
+    List<Future> ops = [];
+    var db = sqliteConnector.db!;
+    List<MapRow> removeRows = [];
+    for (var remoteRow in remoteTable) {
+      var localRow = getLocalRow(remoteRow);
+      switch (remoteRow[dbOpCol]) {
+        case _DbOp.UNCHANGED:
+          continue;
+        case _DbOp.DELETE:
+          removeRows.add(remoteRow);
+          break;
+        case _DbOp.UPDATE:
+          ops.add(db
+              .update(
+                  "currency_table",
+                  {
+                    "name": localRow["name"],
+                    "value": localRow["value"].toString()
+                  },
+                  where: "id=?",
+                  whereArgs: [remoteRow["id"]])
+              .then((result) async {
+            var query = await db.query("currency_table",
+                where: "id=?", whereArgs: [remoteRow["id"]]);
+            var row = query[0];
+            bool check = row["name"] == localRow["name"] &&
+                row["value"] == localRow["value"];
+            if (!check) {
+              print(
+                  "Error: row ${remoteRow['id']} for currency ${localRow['name']} did not match SQLite verification");
+              print("Expected name ${localRow["name"]}, got ${row["name"]}");
+              print("Expected value ${localRow["value"]}, got ${row["value"]}");
+            }
+            remoteRow["name"] = localRow["name"];
+            remoteRow["value"] = localRow["value"];
+            remoteRow["Op"] = _DbOp.UNCHANGED;
+          }));
+          break;
+        case _DbOp.ADD_UPDATE:
+        case _DbOp.ADD:
+          ops.add(db.insert("currency_table", {
+            "name": localRow["name"],
+            "value": localRow["value"].toString()
+          }).then((value) {
+            remoteRow["id"] = value;
+            remoteRow["name"] = localRow["name"];
+            remoteRow["value"] = localRow["value"];
+            remoteRow["Op"] = _DbOp.UNCHANGED;
+          }));
+          break;
+      }
+    }
+    for (var row in removeRows) {
+      ops.add(db.delete("currency_table",
+          where: "id=?", whereArgs: [row["id"]]).then((value) {
+        if (value > 1)
+          print(
+              "Error: removal of currency ${row['name']} removed too many rows");
+        else if (value < 1)
+          print("Error: removal of currency ${row['name']} failed");
+        else
+          remoteTable.remove(row);
+      }));
+    }
+
+    await Future.wait(ops).whenComplete(() => prepareTables());
+    dirty = false;
   }
 
   Future _submitChangesMariaDB() async {
