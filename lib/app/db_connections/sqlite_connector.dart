@@ -61,7 +61,7 @@ class _SqliteConnector {
   Future<List<Map<String, Object?>>> getCurrencyDataFull() async {
     await initialized;
     var results =
-        await db!.query(currencyTableName, columns: ["name", "value"]);
+        await db!.query(currencyTableName, columns: ["id", "name", "value"]);
     return results;
   }
 

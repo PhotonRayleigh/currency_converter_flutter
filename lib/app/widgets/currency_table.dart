@@ -35,7 +35,7 @@ class CurrencyTableState extends State<CurrencyTable> {
   CurrencyDbEditorState? parent;
   bool editing = false;
   int editingIndex = 0;
-  DtRow? editingRow;
+  MapRow? editingRow;
 
   @override
   void initState() {
@@ -67,7 +67,7 @@ class CurrencyTableState extends State<CurrencyTable> {
   void startEditing(int rowID) {
     editing = true;
     editingIndex = rowID;
-    editingRow = controller.dataTable.rows[rowID];
+    editingRow = controller.dataTable[rowID];
     parent!.setState(() {});
   }
 
@@ -99,15 +99,18 @@ class CurrencyTableState extends State<CurrencyTable> {
                   color: widget.bgColor,
                   borderRadius: BorderRadius.all(Radius.circular(6))),
               columns: [
-                for (var col in controller.dataTable.columns)
-                  DataColumn(label: Text(col.name)),
+                DataColumn(label: Text("name")),
+                DataColumn(label: Text("value")),
                 DataColumn(label: SizedBox()),
               ],
               rows: _buildRows()),
           IconButton(
             icon: Icon(Icons.add_circle_outline),
             onPressed: () {
-              controller.addRow().whenComplete(() {
+              controller.addRow(newRow: {
+                "name": "null",
+                "value": Decimal.zero
+              }).whenComplete(() {
                 parent!.setState(() {});
               });
             },
@@ -120,16 +123,11 @@ class CurrencyTableState extends State<CurrencyTable> {
   List<DataRow> _buildRows() {
     var rows = <DataRow>[];
     int i = 0;
-    for (var row in controller.dataTable.rows) {
+    for (var row in controller.dataTable) {
       var tempCells = <DataCell>[];
       var tempI = i;
-      for (var cell in row.cells) {
-        if (cell is String) {
-          tempCells.add(DataCell(Text(cell)));
-        } else {
-          tempCells.add(DataCell(Text(cell.toString())));
-        }
-      }
+      tempCells.add(DataCell(Text(row["name"] as String)));
+      tempCells.add(DataCell(Text((row["value"] as Decimal).toString())));
       tempCells.add(DataCell(
         Row(children: [
           IconButton(

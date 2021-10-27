@@ -45,18 +45,18 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
             var data = sharedCurrencyData!;
             data.names = [];
             data.values = [];
-            for (var row in tController.dataTable.rows) {
-              data.names.add(row[localNameCol]);
-              data.values.add(row[localValueCol]);
+            for (var row in tController.dataTable) {
+              data.names.add(row["name"] as String);
+              data.values.add(row["value"] as Decimal);
             }
           });
         } else {
           var data = sharedCurrencyData!;
           data.names = <String>[];
           data.values = <Decimal>[];
-          for (var row in tController.dataTable.rows) {
-            data.names.add(row[localNameCol]);
-            data.values.add(row[localValueCol]);
+          for (var row in tController.dataTable) {
+            data.names.add(row["name"] as String);
+            data.values.add(row["value"] as Decimal);
           }
         }
       },
@@ -65,8 +65,8 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
 
   void enterEditMode() {
     var tableState = tableKey.currentState!;
-    currencyInput.text = tableState.editingRow![localNameCol] as String;
-    valueInput.text = tableState.editingRow![localValueCol].toString();
+    currencyInput.text = tableState.editingRow!["name"] as String;
+    valueInput.text = tableState.editingRow!["value"].toString();
     editing = true;
   }
 
