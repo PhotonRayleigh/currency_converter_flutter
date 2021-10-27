@@ -1,16 +1,5 @@
-# currency_converter_flutter
+# Currency Converter - Flutter
 
-A new Flutter project.
+This is a practice project inspired by the currency converter tutorial provided by Tutorials.EU. The original tutorial uses C#, WPF, and Microsoft SQL database on Windows, and can be found here: https://tutorials.eu/build-a-currency-converter-application-using-wpf-in-c-with-database/. I have adapted the project to use Dart, Flutter, and MySQL/Sqlite instead. The project can run on desktop and mobile. Web is not supported.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+If you want to setup and run this project yourself, you will need to download and install Flutter for your platform per the documentation on https://Flutter.dev. Once complete, you will need to clone this repository as well as Spark Lib (https://github.com/PhotonRayleigh/spark_lib_flutter) into the same parent directory. The Currency Converter project expects the `spark_lib` folder to be in the same directory as itself. With all that done, you can run `flutter pub get` then `flutter run` to run the project in debug mode.
