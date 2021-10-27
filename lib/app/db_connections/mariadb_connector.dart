@@ -14,8 +14,8 @@ class _MariaDBConnector {
   ConnectionSettings? settings = ConnectionSettings(
     host: 'localhost',
     port: 3306,
-    user: 'Collin',
-    password: 'wumIvO7O',
+    user: 'User',
+    password: 'S42EMAtaKOm1',
     db: 'currency',
   );
 
