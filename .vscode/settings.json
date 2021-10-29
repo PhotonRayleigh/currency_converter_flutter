@@ -1,19 +1,4 @@
 {
     "cmake.configureOnOpen": false,
-    "sqltools.connections": [
-        {
-            "mysqlOptions": {
-                "authProtocol": "default"
-            },
-            "previewLimit": 50,
-            "server": "localhost",
-            "port": 3306,
-            "driver": "MariaDB",
-            "name": "MariaDB",
-            "database": "currency",
-            "username": "Collin",
-            "password": "wumIvO7O"
-        }
-    ],
     "C_Cpp.default.configurationProvider": "go2sh.cmake-integration"
 }
