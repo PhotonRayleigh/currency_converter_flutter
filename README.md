@@ -7,4 +7,6 @@ If you want to setup and run this project yourself, you will need to download an
 Also note, if you do run this project, it is currently configured to use my API key from https://openexchangerates.org/. If you plan on building and running the app a lot, for whatever reason, I recommend getting and using your own API key since each free tier key has limited uses per month.
 
 ### Screenshots
-![Desktop Converter Screen](docs/screenshots/Converter screen.png?raw=true)
+![Desktop Converter Screen](docs/screenshots/Converter%20screen.png =123x123)
+![Desktop Converter Screen](docs/screenshots/Editor%20screen.png)
+![Desktop Converter Screen](docs/screenshots/Mobile%20converter.png)
