@@ -18,6 +18,9 @@ import '../misc/clean_and_parse_decimal.dart';
 // Reminder: Flutter wrap plugin lets you use ALT-C to wrap a selection in a container,
 // and ALT-S to wrap a selection in a stack.
 
+// Openexchangerates.org base path: https://openexchangerates.org/api/
+// Get request: https://openexchangerates.org/api/latest.json?app_id=02213fccad46472d8934f3fb57519a6d
+
 class ConverterScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -189,6 +192,18 @@ class ConverterScreenState extends State<ConverterScreen> {
         Text(_formatCurrencyOutput(), style: TextStyle(fontSize: 16)),
         _buildUserInputPanel(context),
         convertClearButtons,
+        Container(
+            margin: EdgeInsets.all(6.0),
+            padding: EdgeInsets.fromLTRB(6, 4, 6, 4),
+            decoration: buttonDecoration,
+            child: TextButton(
+              child: Text("Refresh Database", style: panelTextStyle),
+              onPressed: () async {
+                await currencyData!
+                    .updateFromInternet()
+                    .whenComplete(() => setState(() {}));
+              },
+            )),
       ],
     );
 

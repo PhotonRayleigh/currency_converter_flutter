@@ -162,20 +162,20 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
             onPressed: cancelButton,
           ),
         ),
-        if (mariaDBConnector.connection == null)
-          Container(
-            margin: EdgeInsets.all(6.0),
-            padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-            decoration: buttonDecoration,
-            child: retryDbConnButton,
-          ),
-        if (mariaDBConnector.connection != null)
-          Container(
-            margin: EdgeInsets.all(6.0),
-            padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-            decoration: buttonDecoration,
-            child: printDbConnButton,
-          ),
+        // if (mariaDBConnector.connection == null)
+        //   Container(
+        //     margin: EdgeInsets.all(6.0),
+        //     padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+        //     decoration: buttonDecoration,
+        //     child: retryDbConnButton,
+        //   ),
+        // if (mariaDBConnector.connection != null)
+        //   Container(
+        //     margin: EdgeInsets.all(6.0),
+        //     padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+        //     decoration: buttonDecoration,
+        //     child: printDbConnButton,
+        //   ),
       ],
     ));
 
