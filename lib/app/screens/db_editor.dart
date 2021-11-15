@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:spark_lib/navigation/spark_nav.dart';
 import 'package:spark_lib/strings/text_formatters.dart';
+import 'package:spark_lib/widgets/unfocuser.dart';
 
 import 'package:currency_converter_flutter/app/widgets/app_bar.dart';
 import 'package:currency_converter_flutter/app/widgets/nav_drawer.dart';
@@ -251,7 +252,8 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
     );
 
     return SparkPage(
-        child: Scaffold(
+        child: Unfocuser(
+            child: Scaffold(
       appBar: customAppBar(
         context,
         tableDirty,
@@ -270,7 +272,7 @@ class CurrencyDbEditorState extends State<CurrencyDbEditor> {
         ],
       ),
       drawer: tableDirty ? null : NavDrawer(),
-    ));
+    )));
   }
 
   NewGradientAppBar customAppBar(BuildContext context, bool tableDirty,

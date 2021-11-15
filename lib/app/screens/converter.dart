@@ -7,6 +7,7 @@ import 'package:decimal/decimal.dart';
 
 import 'package:spark_lib/strings/text_formatters.dart';
 import 'package:spark_lib/navigation/spark_nav.dart';
+import 'package:spark_lib/widgets/unfocuser.dart';
 
 import 'package:currency_converter_flutter/app/data/currencies.dart';
 import 'package:currency_converter_flutter/app/app_system_manager.dart';
@@ -20,6 +21,9 @@ import '../misc/clean_and_parse_decimal.dart';
 
 // Openexchangerates.org base path: https://openexchangerates.org/api/
 // Get request: https://openexchangerates.org/api/latest.json?app_id=02213fccad46472d8934f3fb57519a6d
+
+// TODO: I think I need to add the permission for internet access to this project
+// for the api request to work in release mode.
 
 class ConverterScreen extends StatefulWidget {
   @override
@@ -208,35 +212,25 @@ class ConverterScreenState extends State<ConverterScreen> {
     );
 
     return SparkPage(
-        child: Focus(
-            focusNode: _bgNode,
-            child: GestureDetector(
-              onTap: () {
-                if (_bgNode.hasFocus) {
-                  _bgNode.unfocus();
-                } else {
-                  _bgNode.requestFocus();
-                }
-              },
-              child: Scaffold(
-                  key: scaffoldKey,
-                  appBar: MainAppBar.build(
-                    context,
-                    titleText: "Currency Converter",
-                  ),
-                  drawer: NavDrawer(),
-                  body: InteractiveViewer(
-                    panEnabled: true,
-                    scaleEnabled: false,
-                    constrained: false,
-                    alignPanAxis: true,
-                    child: SizedBox(
-                        width:
-                            context.width > minWidth ? context.width : minWidth,
-                        height: null,
-                        child: primaryDisplayColumn),
-                  )),
-            )));
+        child: Unfocuser(
+      child: Scaffold(
+          key: scaffoldKey,
+          appBar: MainAppBar.build(
+            context,
+            titleText: "Currency Converter",
+          ),
+          drawer: NavDrawer(),
+          body: InteractiveViewer(
+            panEnabled: true,
+            scaleEnabled: false,
+            constrained: false,
+            alignPanAxis: true,
+            child: SizedBox(
+                width: context.width > minWidth ? context.width : minWidth,
+                height: null,
+                child: primaryDisplayColumn),
+          )),
+    ));
   }
 
   Widget _buildList(
